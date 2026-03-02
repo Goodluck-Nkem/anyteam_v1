@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class SysConfig_Mapper {
     public SysConfig_DTO toResponseDTO(SysConfig_Entity sysConfig){
-        return new SysConfig_DTO(sysConfig.getCreationSession().getTTL());
+        return new SysConfig_DTO(sysConfig.getCreationSession().getTtl());
     }
 }

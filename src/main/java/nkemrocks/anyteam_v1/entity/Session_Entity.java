@@ -58,7 +58,7 @@ public class Session_Entity {
     /** Time-To-Live in seconds */
     @NonNull
     @Column(nullable = false)
-    private int TTL;
+    private Integer ttl;
     
 
     /* ---- ++++++++++++++ ---- */
@@ -71,34 +71,34 @@ public class Session_Entity {
     private ArrayList<PlayerStats_Entity> playerStats = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
+    private boolean requiresArt = false;
+
+    @Column(nullable = false, updatable = false)
+    private boolean requiresBiology = false;
+
+    @Column(nullable = false, updatable = false)
+    private boolean requiresHistory = false;
+
+    @Column(nullable = false, updatable = false)
+    private boolean requiresLanguage = false;
+
+    @Column(nullable = false, updatable = false)
+    private boolean requiresLogic = false;
+
+    @Column(nullable = false, updatable = false)
     private boolean requiresMath = false;
     
     @Column(nullable = false, updatable = false)
     private boolean requiresMusic = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresArt = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresHistory = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresSport = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresLanguage = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresTechnology = false;
-    
+
     @Column(nullable = false, updatable = false)
     private boolean requiresSpelling = false;
-    
+
     @Column(nullable = false, updatable = false)
-    private boolean requiresLogic = false;
-    
+    private boolean requiresSport = false;
+
     @Column(nullable = false, updatable = false)
-    private boolean requiresBiology = false;
+    private boolean requiresTechnology = false;
 
     
     /* ---- ++++++++++++++ ---- */

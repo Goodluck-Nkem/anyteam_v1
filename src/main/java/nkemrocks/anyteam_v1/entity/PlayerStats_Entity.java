@@ -50,54 +50,42 @@ public class PlayerStats_Entity {
     @JoinColumn(name = "session_id", nullable = false)
     private Session_Entity session;
 
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int math;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int music;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int art;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int history;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int sport;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int language;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int technology;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int spelling;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int logic;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int biology;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private int rating;
-
-
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
+    @Column(nullable = false, updatable = false)
+    private int art;
+
+    @Column(nullable = false, updatable = false)
+    private int biology;
+
+    @Column(nullable = false, updatable = false)
+    private int history;
+
+    @Column(nullable = false, updatable = false)
+    private int language;
+
+    @Column(nullable = false, updatable = false)
+    private int logic;
+
+    @Column(nullable = false, updatable = false)
+    private int math;
+
+    @Column(nullable = false, updatable = false)
+    private int music;
+
+    @Column(nullable = false, updatable = false)
+    private int spelling;
+
+    @Column(nullable = false, updatable = false)
+    private int sport;
+
+    @Column(nullable = false, updatable = false)
+    private int technology;
+
+    @Column(nullable = false, updatable = false)
+    private int rating;
+
 
 
     /* ---- ++++++++++++++ ---- */

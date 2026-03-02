@@ -23,7 +23,7 @@ public class SysConfig_Service {
          * 1.  Check if the <Creation> session has been initialized
          * 2a. If No, create the creation session
          * 2b. Then save sysConfig only record
-         * 3.  If Yes, just update session's TTL
+         * 3.  If Yes, just update session's ttl
          */
 
         /* 1. Check if the <Creation> session has been initialized */
@@ -35,16 +35,16 @@ public class SysConfig_Service {
             /* 2a. If No, create the creation session */
             Session_Entity creationSession = new Session_Entity(
                     GlobalUtil.creationSessionName,
-                    data.TTL()
+                    data.ttl()
             );
 
             /* 2b. Then save sysConfig only record */
             return sysConfigRepository.save(new SysConfig_Entity(1L, sessionRepository.save(creationSession)));
         }
         else {
-            /* 3.  If Yes, just update session's TTL */
+            /* 3.  If Yes, just update session's ttl */
             Session_Entity creationSession = sysConfig.getCreationSession();
-            creationSession.setTTL(data.TTL());
+            creationSession.setTtl(data.ttl());
             sessionRepository.save(creationSession);
             return sysConfig;
         }

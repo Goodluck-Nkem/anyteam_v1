@@ -30,20 +30,22 @@ public class Player_Service {
     public Player_Entity createPlayer(Player_Create_RequestDTO data) {
 
         /* STEPS:
-         * 1. Confirm the <Creation> session has been initialized and still open
-         * 2. Create the new player
-         * 3. Generate and Create the new playerStats
-         * 4. Update the new player currentStats
+         * 1a. Confirm the <Creation> session has been initialized
+         * 1b. Confirm it is still open
+         * 2.  Create the new player
+         * 3a. Generate the new playerStats
+         * 3b. Then save it
+         * 4.  Update the new player currentStats then return
          */
 
         /* 1a. Confirm the <Creation> session has been initialized */
         SysConfig_Entity sysConfig = sysConfigRepository.findById(1L)
-                .orElseThrow(() -> new ServiceUnavailableException("Metadata record is not yet initialized, service not ready!"));
+                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) record is not yet initialized, hence service unavailable!"));
         Session_Entity creationSession = sysConfig.getCreationSession();
 
         /* 1b. Confirm it is still open */
-        if(Instant.now().isAfter(creationSession.getDateCreated().plusSeconds(creationSession.getTTL())))
-            throw new SessionExpiredException("Session for creating new teams/players have expired!");
+        if (Instant.now().isAfter(creationSession.getDateCreated().plusSeconds(creationSession.getTtl())))
+            throw new SessionExpiredException("Session for creating new teams/players/sessions have expired!");
 
         /* 2. Create the new player */
         Player_Entity player = new Player_Entity(
@@ -51,35 +53,37 @@ public class Player_Service {
                 data.firstName(),
                 data.lastName()
         );
-        playerRepository.save(player);
+        player = playerRepository.save(player);
 
         /* 3a. Generate the new playerStats */
         PlayerStats_Create_RequestDTO playerStatsData = PlayerStats_ServiceUtil.generateForCreationSession(data);
 
-        /* 3. Generate and Create the new playerStats */
+        /* 3b. Then save it */
         PlayerStats_Entity currentPlayerStats = new PlayerStats_Entity(
                 player,
-                creationSession,
-                playerStatsData.math(),
-                playerStatsData.music(),
-                playerStatsData.art(),
-                playerStatsData.history(),
-                playerStatsData.sport(),
-                playerStatsData.language(),
-                playerStatsData.technology(),
-                playerStatsData.spelling(),
-                playerStatsData.logic(),
-                playerStatsData.biology(),
-                playerStatsData.rating()
+                creationSession
         );
-        playerStatsRepository.save(currentPlayerStats);
+        currentPlayerStats.setArt(playerStatsData.art());
+        currentPlayerStats.setBiology(playerStatsData.biology());
+        currentPlayerStats.setHistory(playerStatsData.history());
+        currentPlayerStats.setLanguage(playerStatsData.language());
+        currentPlayerStats.setLogic(playerStatsData.logic());
+        currentPlayerStats.setMath(playerStatsData.math());
+        currentPlayerStats.setMusic(playerStatsData.music());
+        currentPlayerStats.setSpelling(playerStatsData.spelling());
+        currentPlayerStats.setSport(playerStatsData.sport());
+        currentPlayerStats.setTechnology(playerStatsData.technology());
+        currentPlayerStats.setRating(playerStatsData.rating());
+        currentPlayerStats = playerStatsRepository.save(currentPlayerStats);
 
         /* 4. Update the new player currentStats */
         player.setCurrentPlayerStats(currentPlayerStats);
         return playerRepository.save(player);
     }
 
-    /** update player by ID */
+    /**
+     * update player by ID
+     */
     public Player_Entity updatePlayer() {
         return playerRepository.save();
     }
@@ -88,17 +92,23 @@ public class Player_Service {
         return playerRepository.findAll();
     }
 
-    /** find exact player by ID */
+    /**
+     * find exact player by ID
+     */
     public Player_Entity findPlayer() {
         return playerRepository.findById();
     }
 
-    /** find exact player by name (UI should have no reason to use this, should instead use ID for speed) */
+    /**
+     * find exact player by name (UI should have no reason to use this, should instead use ID for speed)
+     */
     public Player_Entity findPlayer() {
         return playerRepository.findByPlayerName();
     }
 
-    /** search players with name like this, also with pagination (default 10) */
+    /**
+     * search players with name like this, also with pagination (default 10)
+     */
     public List<Player_Entity> searchForPlayer() {
         return playerRepository.findByPlayerNameContainingIgnoreCase();
     }

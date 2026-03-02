@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "metadata")
+@Table(name = "sysConfig")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

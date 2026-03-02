@@ -1,18 +1,22 @@
 package nkemrocks.anyteam_v1.dto.playerStats.request;
 
-public record PlayerStats_Create_RequestDTO(
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-        int math,
-        int music,
-        int art,
-        int history,
-        int sport,
-        int language,
-        int technology,
-        int spelling,
-        int logic,
-        int biology,
-        int rating
-
-) {
+@Setter
+@Getter
+@Builder
+public class PlayerStats_Create_RequestDTO{
+    int art;
+    int biology;
+    int history;
+    int language;
+    int logic;
+    int math;
+    int music;
+    int spelling;
+    int sport;
+    int technology;
+    int rating;
 }

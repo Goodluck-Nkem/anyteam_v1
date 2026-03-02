@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record SysConfig_DTO(
         @NotNull(message = ERROR_NULL_TTL)
-        Integer TTL
+        Integer ttl
 ) {
-    private static final String ERROR_NULL_TTL = "Time-To-Live (TTL) field cannot be null!";
+    private static final String ERROR_NULL_TTL = "Time-To-Live (ttl) field cannot be null!";
 }
