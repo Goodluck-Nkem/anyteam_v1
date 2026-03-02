@@ -1,0 +1,37 @@
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: anyteam_v1_db
+      POSTGRES_USER: anyteam_v1_postgres
+      POSTGRES_PASSWORD: anyteam_v1_postgres_1234
+    ports:
+      - "5432:5432"
+
+    # periodic health check, with startup delay for postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anyteam_v1_postgres -d anyteam_v1_db"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    # For testing purpose only, to simulate persistence
+    volumes:
+      - postgres_volume_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# For testing purpose only, to simulate persistence
+volumes:
+  postgres_volume_data:
