@@ -47,6 +47,6 @@ public class SysConfig_Entity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return id.hashCode();
     }
 }

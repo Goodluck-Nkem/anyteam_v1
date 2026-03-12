@@ -1,41 +1,69 @@
 package nkemrocks.anyteam_v1.controller;
 
-import nkemrocks.anyteam_v1.entity.Player_Entity;
-import nkemrocks.anyteam_v1.dto.player.request.Player_Create_RequestDTO;
-import nkemrocks.anyteam_v1.dto.player.response.Player_Create_ResponseDTO;
+import lombok.RequiredArgsConstructor;
+import nkemrocks.anyteam_v1.dto.player.request.*;
+import nkemrocks.anyteam_v1.dto.player.response.*;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Fetch_ResponseDTO;
-import nkemrocks.anyteam_v1.mapper.PlayerStats_Mapper;
-import nkemrocks.anyteam_v1.mapper.Player_Mapper;
 import nkemrocks.anyteam_v1.service.Player_Service;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
+
+import static nkemrocks.anyteam_v1.GlobalUtil.trimAndLower;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/player")
 public class Player_Controller {
     private final Player_Service playerService;
-    private final Player_Mapper playerMapper;
-    private final PlayerStats_Mapper playerStatsMapper;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Player_Create_ResponseDTO> create(@Valid @RequestBody Player_Create_RequestDTO data) {
-        Player_Entity player = playerService.createPlayer(data);
-        return new ResponseEntity<>(playerMapper.toCreate_ResponseDTO(player, playerStatsMapper), HttpStatus.CREATED);
+        Player_Create_ResponseDTO response = playerService.createPlayer(data);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @PostMapping("/update")
+    public ResponseEntity<Player_Update_ResponseDTO> update(@Valid @RequestBody Player_Update_RequestDTO data) {
+        Player_Update_ResponseDTO response = playerService.updatePlayer(data);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/find")
+    public ResponseEntity<Player_Fetch_ResponseDTO> find(
+            @RequestParam(required = false) UUID id,
+            @RequestParam(required = false) String name
+    ) {
+        if (id == null && (name == null || name.trim().isBlank()))
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, """
+                    You must provide either the player ID(recommended) or player name to find the player.
+                    For example, /find?id=3, or /find?name=ABC
+                    """
+            );
+        Player_Fetch_ResponseDTO response =  id != null ?
+                playerService.findPlayer(id) :
+                playerService.findPlayer(trimAndLower(name));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Player_Fetch_ResponseDTO>> search(
+            @RequestParam String q
+    ){
+        List<Player_Fetch_ResponseDTO> response = playerService.searchForPlayers(q.toLowerCase());
+        return ResponseEntity.ok(response);
+    }
+
+    /** Lists all created players in the database */
+    @GetMapping("/list")
     public ResponseEntity<List<Player_Fetch_ResponseDTO>> list() {
-        List<Player_Entity> players = playerService.listAllPlayers();
-        List<Player_Fetch_ResponseDTO> fetchResponseDTOS = players
-                .stream()
-                .map(player -> playerMapper.toFetch_ResponseDTO(player, playerStatsMapper))
-                .toList();
-        return ResponseEntity.ok(fetchResponseDTOS);
+        List<Player_Fetch_ResponseDTO> response = playerService.listAllPlayers();
+        return ResponseEntity.ok(response);
     }
 }

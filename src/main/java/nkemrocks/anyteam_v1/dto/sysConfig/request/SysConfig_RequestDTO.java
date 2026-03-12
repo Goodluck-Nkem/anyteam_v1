@@ -1,8 +1,8 @@
-package nkemrocks.anyteam_v1.dto.sysConfig;
+package nkemrocks.anyteam_v1.dto.sysConfig.request;
 
 import jakarta.validation.constraints.NotNull;
 
-public record SysConfig_DTO(
+public record SysConfig_RequestDTO(
         @NotNull(message = ERROR_NULL_TTL)
         Integer ttl
 ) {

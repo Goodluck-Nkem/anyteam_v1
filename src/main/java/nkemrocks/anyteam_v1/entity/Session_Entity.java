@@ -16,15 +16,18 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 public class Session_Entity {
-    
+
+    @Id
+    @Column(updatable = false, nullable = false)
+    UUID id = UuidCreator.getTimeOrderedEpoch();;
+
     /* we got prepersist-set, required-set and default-set fields */
 
     @PrePersist
-    public void generate(){
+    public void createTimeStamps(){
 
         /* prepersist-set fields */
         Instant now = Instant.now();
-        this.id = UuidCreator.getTimeOrderedEpoch();
         this.dateCreated = now;
         this.dateUpdated = now;
         
@@ -38,10 +41,6 @@ public class Session_Entity {
     /* ---- ++++++++++++++ ---- */
     /* prepersist-set fields */
     /* ---- ++++++++++++++ ---- */
-    @Id
-    @Column(updatable = false, nullable = false)
-    UUID id;
-
     @Column(nullable = false, updatable = false)
     private Instant dateCreated;
 
@@ -65,40 +64,13 @@ public class Session_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "session")
-    private ArrayList<TeamStats_Entity> teamStats = new ArrayList<>();
+    private ArrayList<Stats_Entity> stats = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
-    private ArrayList<PlayerStats_Entity> playerStats = new ArrayList<>();
+    private ArrayList<SkillRating_Entity> skillRatings = new ArrayList<>();
 
-    @Column(nullable = false, updatable = false)
-    private boolean requiresArt = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresBiology = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresHistory = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresLanguage = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresLogic = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresMath = false;
-    
-    @Column(nullable = false, updatable = false)
-    private boolean requiresMusic = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresSpelling = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresSport = false;
-
-    @Column(nullable = false, updatable = false)
-    private boolean requiresTechnology = false;
+    @OneToMany(mappedBy = "session")
+    private ArrayList<SkillSelection_Entity> skillSelections = new ArrayList<>();
 
     
     /* ---- ++++++++++++++ ---- */

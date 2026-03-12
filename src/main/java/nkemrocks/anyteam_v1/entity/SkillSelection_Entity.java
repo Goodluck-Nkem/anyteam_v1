@@ -1,0 +1,58 @@
+package nkemrocks.anyteam_v1.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.Objects;
+
+@Entity
+@Table(name = "skillSelection",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "Unique_Session_Skill", columnNames = {"session_id", "skill_id"})
+        })
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor
+public class SkillSelection_Entity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
+    Long id;
+
+
+    /* ---- ++++++++++++++ ---- */
+    /* required-set fields */
+    /* ---- ++++++++++++++ ---- */
+    @NonNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", nullable = false)
+    Session_Entity session;
+
+    @NonNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "skill_id", nullable = false)
+    Skill_Entity skill;
+
+
+    /* ---- ++++++++++++++ ---- */
+    /* default-set fields */
+    /* ---- ++++++++++++++ ---- */
+
+
+    /* ---- ++++++++++++++ ---- */
+    /* equals and hashcode */
+    /* ---- ++++++++++++++ ---- */
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        SkillSelection_Entity that = (SkillSelection_Entity) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+}

@@ -1,39 +1,40 @@
 package nkemrocks.anyteam_v1.entity;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
-@Table(name = "teamStats")
+@Table(name = "stats",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "Unique_Team_Session", columnNames = {"team_id", "session_id"})
+        })
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
-public class TeamStats_Entity {
+public class Stats_Entity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
+    Long id;
 
     /* we got prepersist-set, required-set and default-set fields */
 
     @PrePersist
-    public void generate(){
+    public void createTimeStamp(){
 
         /* prepersist-set fields */
-        this.id = UuidCreator.getTimeOrderedEpoch();
         this.dateCreated = Instant.now();
     }
 
     /* ---- ++++++++++++++ ---- */
     /* prepersist-set fields */
     /* ---- ++++++++++++++ ---- */
-    @Id
-    @Column(updatable = false, nullable = false)
-    UUID id;
-
     @Column(nullable = false)
     private Instant dateCreated;
 
@@ -43,7 +44,7 @@ public class TeamStats_Entity {
     /* ---- ++++++++++++++ ---- */
     @NonNull
     @Column(nullable = false, updatable = false)
-    private int score;
+    private int teamScore;
 
     @NonNull
     @Column(nullable = false, updatable = false)
@@ -51,7 +52,7 @@ public class TeamStats_Entity {
 
     @NonNull
     @Column(nullable = false, updatable = false)
-    private int rating;
+    private int teamRating;
 
     @NonNull
     @ManyToOne(fetch = FetchType.LAZY)
@@ -67,7 +68,7 @@ public class TeamStats_Entity {
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
-    @ManyToMany(mappedBy = "teamStats")
+    @ManyToMany(mappedBy = "stats")
     private ArrayList<Player_Entity> players = new ArrayList<>();
 
 
@@ -77,12 +78,12 @@ public class TeamStats_Entity {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        TeamStats_Entity that = (TeamStats_Entity) o;
+        Stats_Entity that = (Stats_Entity) o;
         return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return getClass().hashCode();
     }
 }

@@ -17,23 +17,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class Team_Entity {
 
+    @Id
+    @Column(updatable = false, nullable = false)
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+
     /* we got prepersist-set, required-set and default-set fields */
 
     @PrePersist
-    public void generate(){
+    public void createTimeStamp(){
 
         /* prepersist-set fields */
-        this.id = UuidCreator.getTimeOrderedEpoch();
         this.dateCreated = Instant.now();
     }
 
     /* ---- ++++++++++++++ ---- */
     /* prepersist-set fields */
     /* ---- ++++++++++++++ ---- */
-    @Id
-    @Column(updatable = false, nullable = false)
-    UUID id;
-
     @Column(nullable = false)
     private Instant dateCreated;
 
@@ -47,15 +46,14 @@ public class Team_Entity {
 
     @NonNull
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "current_teamstats_id", nullable = false)
-    private TeamStats_Entity currentTeamStats;
-
+    @JoinColumn(name = "last_active_session_id", nullable = false)
+    private Session_Entity lastActiveSession;
 
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "team")
-    private ArrayList<TeamStats_Entity> teamStatsForAllSessions = new ArrayList<>();
+    private ArrayList<Stats_Entity> statsCollection = new ArrayList<>();
 
     /* ---- ++++++++++++++ ---- */
     /* equals and hashcode */

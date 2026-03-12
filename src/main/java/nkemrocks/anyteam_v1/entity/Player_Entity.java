@@ -17,14 +17,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class Player_Entity {
 
+    @Id
+    @Column(updatable = false, nullable = false)
+    private UUID id = UuidCreator.getTimeOrderedEpoch();
+
     /* we got prepersist-set, required-set and default-set fields */
 
     @PrePersist
-    public void generate() {
+    public void createTimeStamps() {
 
         /* prepersist-set fields */
         Instant now = Instant.now();
-        this.id = UuidCreator.getTimeOrderedEpoch();
         this.dateCreated = now;
         this.dateUpdated = now;
 
@@ -38,10 +41,6 @@ public class Player_Entity {
     /* ---- ++++++++++++++ ---- */
     /* prepersist-set fields */
     /* ---- ++++++++++++++ ---- */
-    @Id
-    @Column(updatable = false, nullable = false)
-    private UUID id;
-
     @Column(nullable = false, updatable = false)
     private Instant dateCreated;
 
@@ -54,7 +53,7 @@ public class Player_Entity {
     /* ---- ++++++++++++++ ---- */
     @NonNull
     @Column(nullable = false, unique = true)
-    private String playerName;
+    private String userName;
 
     @NonNull
     @Column(nullable = false)
@@ -64,22 +63,23 @@ public class Player_Entity {
     @Column(nullable = false)
     private String lastName;
 
+    @NonNull
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_active_session_id", nullable = false)
+    private Session_Entity lastActiveSession;
+
 
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "current_playerstats_id", nullable = true)
-    private PlayerStats_Entity currentPlayerStats;
-
     @OneToMany(mappedBy = "player")
-    private ArrayList<PlayerStats_Entity> playerStatsForAllSessions = new ArrayList<>();
+    private ArrayList<SkillRating_Entity> skillRatingCollection = new ArrayList<>();
 
     @ManyToMany
-    @JoinTable(name = "junction_player_teamstats",
+    @JoinTable(name = "junction_player_stats",
             joinColumns = @JoinColumn(name = "player_id"),
-            inverseJoinColumns = @JoinColumn(name = "teamstats_id"))
-    private ArrayList<TeamStats_Entity> teamStats = new ArrayList<>();
+            inverseJoinColumns = @JoinColumn(name = "stats_id"))
+    private ArrayList<Stats_Entity> stats = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

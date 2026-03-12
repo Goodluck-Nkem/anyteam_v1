@@ -1,8 +1,5 @@
 package nkemrocks.anyteam_v1;
 
-import java.time.Instant;
-import java.util.Collection;
-
 /**
  * This is a utility class, so All methods are expected to be public static, so that an instance is not required
  */
@@ -23,17 +20,6 @@ public class GlobalUtil {
     }
 
     /**
-     * itemPresent
-     */
-    public static boolean itemPresent(Collection<String> haystack, String needle) {
-        for (String item : haystack) {
-            if (item.equalsIgnoreCase(needle))
-                return true;
-        }
-        return false;
-    }
-
-    /**
      * Hardcoded skillsArray, intended to be fixed and exactly 10 skills
      */
     public static final String ART = "art";
@@ -46,18 +32,5 @@ public class GlobalUtil {
     public static final String SPELLING = "spelling";
     public static final String SPORT = "sport";
     public static final String TECHNOLOGY = "technology";
-    public static final String[] skillsArray = {
-            ART,
-            BIOLOGY,
-            HISTORY,
-            LANGUAGE,
-            LOGIC,
-            MATH,
-            MUSIC,
-            SPELLING,
-            SPORT,
-            TECHNOLOGY,
-    };
-
     public static String creationSessionName = "<Create>";
 }

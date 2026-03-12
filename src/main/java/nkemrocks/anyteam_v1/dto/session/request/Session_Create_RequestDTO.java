@@ -3,9 +3,12 @@ package nkemrocks.anyteam_v1.dto.session.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import nkemrocks.anyteam_v1.GlobalUtil;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import static nkemrocks.anyteam_v1.GlobalUtil.*;
 
 public record Session_Create_RequestDTO(
@@ -27,7 +30,12 @@ public record Session_Create_RequestDTO(
     private static final String ERROR_SIZE_REQUIREMENTS = "There must be exactly 4 requirements selected!";
 
     /* setup some fields just before validation check */
-    public Session_Create_RequestDTO{
+    public Session_Create_RequestDTO {
         sessionName = trimAndLower(sessionName);
+        if (requirements != null)
+            requirements = requirements
+                    .stream()
+                    .map(GlobalUtil::trimAndLower)
+                    .collect(Collectors.toSet());
     }
 }

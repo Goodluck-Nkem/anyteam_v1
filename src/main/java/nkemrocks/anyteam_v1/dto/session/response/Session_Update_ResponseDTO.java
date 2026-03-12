@@ -1,0 +1,17 @@
+package nkemrocks.anyteam_v1.dto.session.response;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record Session_Update_ResponseDTO(
+        UUID id,
+        String sessionName,
+        Integer ttl,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
+        Instant dateCreated,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
+        Instant dateUpdated
+) {
+}

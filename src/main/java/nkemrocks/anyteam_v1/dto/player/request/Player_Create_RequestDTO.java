@@ -1,7 +1,13 @@
 package nkemrocks.anyteam_v1.dto.player.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import nkemrocks.anyteam_v1.GlobalUtil;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static nkemrocks.anyteam_v1.GlobalUtil.*;
 
@@ -10,7 +16,7 @@ public record Player_Create_RequestDTO(
 
         @NotBlank(message = ERROR_NAME_BLANK)
         @Length(min = 1, max = 255, message = ERROR_PLAYER_LENGTH)
-        String playerName,
+        String userName,
 
         @NotBlank(message = ERROR_NAME_BLANK)
         @Length(min = 2, max = 255, message = ERROR_FIRST_LAST_LENGTH)
@@ -18,18 +24,29 @@ public record Player_Create_RequestDTO(
 
         @NotBlank(message = ERROR_NAME_BLANK)
         @Length(min = 2, max = 255, message = ERROR_FIRST_LAST_LENGTH)
-        String lastName
+        String lastName,
+
+        @Size(max = 10, message = ERROR_SIZE_FOCUS_SET)
+        Set<@NotBlank(message = ERROR_SKILL_NAME_BLANK) String> focus_set
 
 ) {
-    private static final String ERROR_NAME_BLANK = "Name must not be blank!";
+    private static final String ERROR_NAME_BLANK = "Name can't be blank!";
     private static final String ERROR_FIRST_LAST_LENGTH = "First/Last name length must be between 2 and 255 inclusive";
-    private static final String ERROR_PLAYER_LENGTH = "Player name length must be between 1 and 255 inclusive";
+    private static final String ERROR_PLAYER_LENGTH = "Player's user name length must be between 1 and 255 inclusive";
+    private static final String ERROR_SIZE_FOCUS_SET = "Maximum of 10 skills to can't be exceeded!";
+    private static final String ERROR_SKILL_NAME_BLANK = "Skill name can't be blank!";
 
-    /* trim certain fields before validation checks */
+    /* setup certain fields before validation checks */
     public Player_Create_RequestDTO {
-        playerName = trim(playerName);
+        userName = trimAndLower(userName);
         firstName = trim(firstName);
         lastName = trim(lastName);
+        focus_set = focus_set == null ?
+                new HashSet<>() :
+                focus_set
+                        .stream()
+                        .map(GlobalUtil::trimAndLower)
+                        .collect(Collectors.toSet());
     }
 
 }
