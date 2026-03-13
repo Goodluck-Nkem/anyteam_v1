@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -31,10 +32,10 @@ public class Skill_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "skill")
-    ArrayList<SkillRating_Entity> playerSkillRatings = new ArrayList<>();
+    List<SkillRating_Entity> playerSkillRatings = new ArrayList<>();
 
     @OneToMany(mappedBy = "skill")
-    ArrayList<SkillSelection_Entity> skillSelections = new ArrayList<>();
+    List<SkillSelection_Entity> skillSelections = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

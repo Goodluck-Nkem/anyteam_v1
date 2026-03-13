@@ -16,13 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
-        return new ResponseEntity<>(
-                new Error_DTO("An Internal/Unexpected error occurred!"),
-                HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
-        );
-    }
+    /* --- Built-in Runtime Exceptions --- */
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Error_DTO> entityNotFoundExceptionHandler(Exception exception) {
@@ -89,7 +83,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RatingLimitException.class)
-    public  ResponseEntity<Error_DTO> ratingLimitExceptionHandler(RatingLimitException exception){
+    public ResponseEntity<Error_DTO> ratingLimitExceptionHandler(RatingLimitException exception) {
         return new ResponseEntity<>(
                 new Error_DTO(exception.getMessage()),
                 HttpStatus.FORBIDDEN  /* 403 */
@@ -125,6 +119,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new Error_DTO(exception.getMessage()),
                 HttpStatus.FORBIDDEN  /* 403 */
+        );
+    }
+
+    /* --- Generic exception --- */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
+        return new ResponseEntity<>(
+                new Error_DTO(
+                        "An Internal/Unexpected error occurred! :: "
+                                + exception.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
         );
     }
 

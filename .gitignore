@@ -36,3 +36,5 @@ build/
 scratch
 
 postgres_volume_data
+
+pom.xml.save

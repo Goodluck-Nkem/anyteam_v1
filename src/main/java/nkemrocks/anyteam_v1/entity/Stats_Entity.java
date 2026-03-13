@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -26,7 +27,7 @@ public class Stats_Entity {
     /* we got prepersist-set, required-set and default-set fields */
 
     @PrePersist
-    public void createTimeStamp(){
+    public void createTimeStamp() {
 
         /* prepersist-set fields */
         this.dateCreated = Instant.now();
@@ -44,15 +45,15 @@ public class Stats_Entity {
     /* ---- ++++++++++++++ ---- */
     @NonNull
     @Column(nullable = false, updatable = false)
-    private int teamScore;
+    private Integer teamScore;
 
     @NonNull
     @Column(nullable = false, updatable = false)
-    private int entropy;
+    private Integer entropy;
 
     @NonNull
     @Column(nullable = false, updatable = false)
-    private int teamRating;
+    private Integer teamRating;
 
     @NonNull
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,7 +70,7 @@ public class Stats_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @ManyToMany(mappedBy = "stats")
-    private ArrayList<Player_Entity> players = new ArrayList<>();
+    private List<Player_Entity> players = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

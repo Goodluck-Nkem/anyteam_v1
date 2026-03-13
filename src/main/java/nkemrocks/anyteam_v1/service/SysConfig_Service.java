@@ -27,7 +27,7 @@ public class SysConfig_Service {
     private final Session_Repository sessionRepository;
     private final Skill_Repository skillRepository;
 
-    private static final String[] initialSkillsArray = {
+    public static final String[] initialSkillsArray = {
             ART,
             BIOLOGY,
             HISTORY,
@@ -72,7 +72,9 @@ public class SysConfig_Service {
             skillRepository.saveAll(skills);
 
             /* 2c. Then save sysConfig only record */
-            sysConfig = sysConfigRepository.save(new SysConfig_Entity(1L, sessionRepository.save(creationSession)));
+            sysConfig = sysConfigRepository.save(new SysConfig_Entity(
+                    1L,
+                    sessionRepository.save(creationSession)));
         } else {
             /* 3.  If Yes, just update session's ttl */
             Session_Entity creationSession = sysConfig.getCreationSession();

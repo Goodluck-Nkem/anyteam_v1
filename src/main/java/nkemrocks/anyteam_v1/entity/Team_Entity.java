@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -53,7 +54,7 @@ public class Team_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "team")
-    private ArrayList<Stats_Entity> statsCollection = new ArrayList<>();
+    private List<Stats_Entity> statsCollection = new ArrayList<>();
 
     /* ---- ++++++++++++++ ---- */
     /* equals and hashcode */

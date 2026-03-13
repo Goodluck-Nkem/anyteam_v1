@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -73,13 +74,13 @@ public class Player_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "player")
-    private ArrayList<SkillRating_Entity> skillRatingCollection = new ArrayList<>();
+    private List<SkillRating_Entity> skillRatingCollection = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name = "junction_player_stats",
             joinColumns = @JoinColumn(name = "player_id"),
             inverseJoinColumns = @JoinColumn(name = "stats_id"))
-    private ArrayList<Stats_Entity> stats = new ArrayList<>();
+    private List<Stats_Entity> stats = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

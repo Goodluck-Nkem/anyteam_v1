@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -64,13 +65,13 @@ public class Session_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "session")
-    private ArrayList<Stats_Entity> stats = new ArrayList<>();
+    private List<Stats_Entity> stats = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
-    private ArrayList<SkillRating_Entity> skillRatings = new ArrayList<>();
+    private List<SkillRating_Entity> skillRatings = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
-    private ArrayList<SkillSelection_Entity> skillSelections = new ArrayList<>();
+    private List<SkillSelection_Entity> skillSelections = new ArrayList<>();
 
     
     /* ---- ++++++++++++++ ---- */

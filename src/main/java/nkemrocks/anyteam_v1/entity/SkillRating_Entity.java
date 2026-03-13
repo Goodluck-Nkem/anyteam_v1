@@ -50,7 +50,7 @@ public class SkillRating_Entity {
 
     @NonNull
     @Column(nullable = false)
-    int skillRating;
+    Integer skillRating;
 
 
     /* ---- ++++++++++++++ ---- */
