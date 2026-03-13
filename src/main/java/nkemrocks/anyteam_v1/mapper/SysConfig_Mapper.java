@@ -9,9 +9,9 @@ import java.util.List;
 
 @Component
 public class SysConfig_Mapper {
-    public SysConfig_ResponseDTO toResponseDTO(@Nullable SysConfig_Entity sysConfig, List<String> skills) {
+    public SysConfig_ResponseDTO toResponseDTO(SysConfig_Entity sysConfig, List<String> skills) {
         return new SysConfig_ResponseDTO(
-                sysConfig == null ? null : sysConfig.getCreationSession().getTtl(),
+                sysConfig.getCreationSession().getTtl(),
                 skills
         );
     }

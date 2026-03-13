@@ -8,6 +8,7 @@ import nkemrocks.anyteam_v1.dto.sysConfig.response.SysConfig_ResponseDTO;
 import nkemrocks.anyteam_v1.entity.Session_Entity;
 import nkemrocks.anyteam_v1.entity.Skill_Entity;
 import nkemrocks.anyteam_v1.entity.SysConfig_Entity;
+import nkemrocks.anyteam_v1.exception.ServiceUnavailableException;
 import nkemrocks.anyteam_v1.mapper.SysConfig_Mapper;
 import nkemrocks.anyteam_v1.repository.Session_Repository;
 import nkemrocks.anyteam_v1.repository.Skill_Repository;
@@ -72,9 +73,11 @@ public class SysConfig_Service {
             skillRepository.saveAll(skills);
 
             /* 2c. Then save sysConfig only record */
-            sysConfig = sysConfigRepository.save(new SysConfig_Entity(
-                    1L,
-                    sessionRepository.save(creationSession)));
+            sysConfig = sysConfigRepository.save(
+                    new SysConfig_Entity(
+                            1L,
+                            sessionRepository.save(creationSession)
+                    ));
         } else {
             /* 3.  If Yes, just update session's ttl */
             Session_Entity creationSession = sysConfig.getCreationSession();
@@ -82,23 +85,32 @@ public class SysConfig_Service {
             sessionRepository.save(creationSession);
         }
 
-        return sysConfigMapper.toResponseDTO(sysConfig, getAllSkills());
+        /* 4.   Return response */
+        return sysConfigMapper.toResponseDTO(
+                sysConfig,
+                skillRepository.fetchAllSkillNames()
+        );
     }
 
     public SysConfig_ResponseDTO getInfo() {
 
         /* STEPS:
          * 1.   Check if the <Creation> session has been initialized
-         * 2.   If No, return null
+         * 2.   If No, throw exception
          * 3.   If Yes, return response
          */
+
+        /* 1,2. Check if the <Creation> session has been initialized, If No, throw exception */
+        SysConfig_Entity sysConfig = sysConfigRepository.findById(1L)
+                .orElseThrow(() -> new ServiceUnavailableException(
+                        "System Configuration (sysConfig) record is not yet initialized!"
+                ));
+
+        /* 3.   If Yes, return response */
         return sysConfigMapper.toResponseDTO(
-                sysConfigRepository.findById(1L).orElse(null),
-                getAllSkills()
+                sysConfig,
+                skillRepository.fetchAllSkillNames()
         );
     }
 
-    public List<String> getAllSkills() {
-        return skillRepository.fetchAllSkillNames();
-    }
 }

@@ -18,6 +18,22 @@ public class GlobalExceptionHandler {
 
     /* --- Built-in Runtime Exceptions --- */
 
+    @ExceptionHandler(DataAccessResourceFailureException.class)
+    public ResponseEntity<Error_DTO> dataAccessResourceFailureExceptionHandler(DataAccessResourceFailureException exception) {
+        return new ResponseEntity<>(
+                new Error_DTO("The database is currently unreachable!"),
+                HttpStatus.SERVICE_UNAVAILABLE /* 503 */
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Error_DTO> dataIntegrityViolationExceptionHandler(DataIntegrityViolationException exception) {
+        return new ResponseEntity<>(
+                new Error_DTO("Database integrity violation occurred!"),
+                HttpStatus.CONFLICT /* 409 */
+        );
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Error_DTO> entityNotFoundExceptionHandler(Exception exception) {
         return new ResponseEntity<>(
@@ -38,14 +54,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Error_DTO> responseStatusExceptionHandler(ResponseStatusException exception) {
-        return new ResponseEntity<>(
-                new Error_DTO(exception.getMessage()),
-                exception.getStatusCode()
-        );
-    }
-
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Error_DTO> missingRequestParamHandler(MissingServletRequestParameterException exception) {
         return new ResponseEntity<>(
@@ -56,19 +64,11 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(DataAccessResourceFailureException.class)
-    public ResponseEntity<Error_DTO> dataAccessResourceFailureExceptionHandler(DataAccessResourceFailureException exception) {
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Error_DTO> responseStatusExceptionHandler(ResponseStatusException exception) {
         return new ResponseEntity<>(
-                new Error_DTO("The database is currently unreachable!"),
-                HttpStatus.SERVICE_UNAVAILABLE /* 503 */
-        );
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Error_DTO> dataIntegrityViolationExceptionHandler(DataIntegrityViolationException exception) {
-        return new ResponseEntity<>(
-                new Error_DTO("Database integrity violation occurred!"),
-                HttpStatus.CONFLICT /* 409 */
+                new Error_DTO(exception.getMessage()),
+                exception.getStatusCode()
         );
     }
 
