@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record Session_Fetch_ResponseDTO(
-        UUID id,
+        UUID sessionId,
         String sessionName,
         Integer ttl,
         List<String> requirements,

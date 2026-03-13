@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record Session_Create_ResponseDTO(
-        UUID id,
+        UUID sessionId,
         String sessionName,
         Integer ttl,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")

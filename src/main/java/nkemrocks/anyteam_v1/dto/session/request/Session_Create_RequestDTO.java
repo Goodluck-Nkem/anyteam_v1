@@ -16,7 +16,7 @@ public record Session_Create_RequestDTO(
         @Length(max = 255, message = ERROR_NAME_LENGTH)
         String sessionName,
 
-        @NotBlank(message = ERROR_NULL_TTL)
+        @NotNull(message = ERROR_NULL_TTL)
         Integer ttl,
 
         @NotNull(message = ERROR_NULL_REQUIREMENTS)
