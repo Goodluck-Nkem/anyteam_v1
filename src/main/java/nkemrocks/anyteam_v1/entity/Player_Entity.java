@@ -5,10 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "players")
@@ -80,7 +77,7 @@ public class Player_Entity {
     @JoinTable(name = "junction_player_stats",
             joinColumns = @JoinColumn(name = "player_id"),
             inverseJoinColumns = @JoinColumn(name = "stats_id"))
-    private List<Stats_Entity> stats = new ArrayList<>();
+    private Set<Stats_Entity> stats = new HashSet<>();
 
 
     /* ---- ++++++++++++++ ---- */

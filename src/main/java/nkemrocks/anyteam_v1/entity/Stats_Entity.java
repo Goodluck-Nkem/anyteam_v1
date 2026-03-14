@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "stats",
@@ -70,7 +68,7 @@ public class Stats_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @ManyToMany(mappedBy = "stats")
-    private List<Player_Entity> players = new ArrayList<>();
+    private Set<Player_Entity> players = new HashSet<>();
 
 
     /* ---- ++++++++++++++ ---- */
