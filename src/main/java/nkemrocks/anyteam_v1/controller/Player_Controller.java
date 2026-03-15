@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import nkemrocks.anyteam_v1.dto.player.request.*;
 import nkemrocks.anyteam_v1.dto.player.response.*;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Fetch_ResponseDTO;
+import nkemrocks.anyteam_v1.exception.ControllerException;
 import nkemrocks.anyteam_v1.service.Player_Service;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,13 +40,11 @@ public class Player_Controller {
             @RequestParam(required = false) String name
     ) {
         if (id == null && (name == null || name.trim().isBlank()))
-            throw new ResponseStatusException(
+            throw new ControllerException(
                     HttpStatus.BAD_REQUEST, """
-                    You must provide either the player ID(recommended) or player name to find the player.
-                    For example, /find?id=3, or /find?name=ABC
-                    """
-            );
-        Player_Fetch_ResponseDTO response =  id != null ?
+                    You must provide either the player ID(recommended) or player name to find the player. \
+                    For example, /find?id=3, or /find?name=ABC""");
+        Player_Fetch_ResponseDTO response = id != null ?
                 playerService.findPlayer(id) :
                 playerService.findPlayer(trimAndLower(name));
         return ResponseEntity.ok(response);
@@ -55,12 +53,14 @@ public class Player_Controller {
     @GetMapping("/search")
     public ResponseEntity<List<Player_Fetch_ResponseDTO>> search(
             @RequestParam String q
-    ){
+    ) {
         List<Player_Fetch_ResponseDTO> response = playerService.searchForPlayers(q.toLowerCase());
         return ResponseEntity.ok(response);
     }
 
-    /** Lists all created players in the database */
+    /**
+     * Lists all created players in the database
+     */
     @GetMapping("/list")
     public ResponseEntity<List<Player_Fetch_ResponseDTO>> list() {
         List<Player_Fetch_ResponseDTO> response = playerService.listAllPlayers();

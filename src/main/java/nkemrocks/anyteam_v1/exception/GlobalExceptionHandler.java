@@ -9,11 +9,18 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.MimeType;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,8 +29,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
         Throwable currentCause = exception;
-        StringBuilder exMsgBuilder = new StringBuilder("");
-        while(currentCause != null){
+        StringBuilder exMsgBuilder = new StringBuilder();
+        while (currentCause != null) {
             exMsgBuilder.append(" --- <")
                     .append(currentCause.getClass().getName())
                     .append("> :: ").append(currentCause.getMessage());
@@ -31,8 +38,8 @@ public class GlobalExceptionHandler {
         }
         return new ResponseEntity<>(
                 new Error_DTO("""
-                        An Internal/Unexpected error occurred! =>%s
-                        """.formatted(exMsgBuilder)),
+                        An Internal/Unexpected error occurred! =>%s"""
+                        .formatted(exMsgBuilder)),
                 HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
         );
     }
@@ -81,10 +88,48 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Error_DTO> entityNotFoundExceptionHandler(Exception exception) {
+    public ResponseEntity<Error_DTO> entityNotFoundExceptionHandler(EntityNotFoundException exception) {
         return new ResponseEntity<>(
-                new Error_DTO("Requested record does not exist!"),
+                new Error_DTO("Requested data record does not exist!"),
                 HttpStatus.NOT_FOUND /* 404 */
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Error_DTO> contentTypeNotSupportedExceptionHandler(HttpMediaTypeNotSupportedException exception) {
+        List<String> supported = exception.getSupportedMediaTypes().stream()
+                .map(MimeType::toString)
+                .toList();
+        return new ResponseEntity<>(
+                new Error_DTO("""
+                        Content-Type '%s' is not supported for this request. ==> Supported types: [ %s ]"""
+                        .formatted(
+                                exception.getContentType(),
+                                supported.isEmpty() ? "" : String.join(", ", supported)
+                        )),
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE /* 415 */
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Error_DTO> messageNotReadableExceptionHandler(HttpMessageNotReadableException exception) {
+        return new ResponseEntity<>(
+                new Error_DTO("You sent a malformed or invalid JSON request body that could not be parsed!"),
+                HttpStatus.BAD_REQUEST /* 400 */
+        );
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Error_DTO> requestMethodNotSupportedHandler(HttpRequestMethodNotSupportedException exception) {
+        String[] supportedMethods = exception.getSupportedMethods();
+        return new ResponseEntity<>(
+                new Error_DTO("""
+                        The '%s' method is not supported for this request. ==> Supported methods: [ %s ]"""
+                        .formatted(
+                                exception.getMethod(),
+                                String.join(", ", supportedMethods)
+                        )),
+                HttpStatus.METHOD_NOT_ALLOWED /* 405 */
         );
     }
 
@@ -104,9 +149,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Error_DTO> missingRequestParamHandler(MissingServletRequestParameterException exception) {
         return new ResponseEntity<>(
                 new Error_DTO("""
-                        Detected Missing request parameter '%s' in the URL
-                        """.formatted(exception.getParameterName())),
+                        Detected Missing request parameter '%s' in the URL"""
+                        .formatted(exception.getParameterName())),
                 HttpStatus.BAD_REQUEST /* 400 */
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Error_DTO> noResourceFoundExceptionHandler(NoResourceFoundException exception) {
+        return new ResponseEntity<>(
+                new Error_DTO("""
+                        The requested endpoint '%s' is not found!"""
+                        .formatted(exception.getResourcePath()
+                        )),
+                HttpStatus.NOT_FOUND /* 404 */
         );
     }
 
@@ -119,6 +175,14 @@ public class GlobalExceptionHandler {
     }
 
     /* --- Custom Runtime Exceptions --- */
+
+    @ExceptionHandler(ControllerException.class)
+    public ResponseEntity<Error_DTO> controllerExceptionHandler(ControllerException exception) {
+        return new ResponseEntity<>(
+                new Error_DTO(exception.getMessage()),
+                exception.getHttpStatusCode()
+        );
+    }
 
     @ExceptionHandler(PersistenceException.class)
     public ResponseEntity<Error_DTO> persistenceExceptionHandler(PersistenceException exception) {

@@ -21,10 +21,11 @@ public record Session_Create_RequestDTO(
 
         @NotNull(message = ERROR_NULL_REQUIREMENTS)
         @Size(min = 4, max = 4, message = ERROR_SIZE_REQUIREMENTS)
-        Set<@NotBlank(message = ERROR_BLANK_NAME) String> requirements
+        Set<@NotBlank(message = ERROR_BLANK_ELEMENT) String> requirements
 ) {
     private static final String ERROR_NULL_TTL = "Time-To-Live (ttl) field cannot be null!";
     private static final String ERROR_BLANK_NAME = "Session name cannot be blank!";
+    private static final String ERROR_BLANK_ELEMENT = "No requirement skill name in the list should be blank!";
     private static final String ERROR_NAME_LENGTH = "Length can't exceed 255!";
     private static final String ERROR_NULL_REQUIREMENTS = "Requirements cannot be null!";
     private static final String ERROR_SIZE_REQUIREMENTS = "There must be exactly 4 requirements selected!";

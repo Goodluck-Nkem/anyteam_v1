@@ -139,8 +139,8 @@ public class Team_Service {
             if (average > oldTeamRating)
                 throw new RatingLimitException("""
                         Player with ID '%s' has an average rating of %d that \
-                        exceeds this team's rating of %d, hence play is rejected!
-                        """.formatted(playerId, average, oldTeamRating));
+                        exceeds this team's rating of %d, hence play is rejected!"""
+                        .formatted(playerId, average, oldTeamRating));
 
             /* Aggregate for the selected skill using current stats */
             for (Long skillId : sessionSkillIds) {
@@ -168,8 +168,8 @@ public class Team_Service {
 
         if (1 != teamRepository.updateActiveSession(data.teamId(), data.sessionId()))
             throw new PersistenceException("""
-                    Team with ID '%s' couldn't update its last active session reference!
-                    """.formatted(data.teamId()));
+                    Team with ID '%s' couldn't update its last active session reference!"""
+                    .formatted(data.teamId()));
 
         /* 5.   For each player, update skillRatings, append data to playerSummary list */
         List<Team_PlayerSummary_DTO> playerSummaries = new ArrayList<>();
@@ -184,7 +184,7 @@ public class Team_Service {
             int newRatingsCount = playerDetails.size();
             for (Long skillId : sessionSkillIds) {
                 Integer oldSkillValue = ratingsMap.get(skillId);
-                if(oldSkillValue == null){
+                if (oldSkillValue == null) {
                     oldSkillValue = 0;
                     newRatingsCount++;
                 }

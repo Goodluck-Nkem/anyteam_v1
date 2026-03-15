@@ -74,8 +74,8 @@ public class Session_Service {
             Skill_Entity skill = skillsMap.get(skillName);
             if (skill == null)
                 throw new ResourceNotFoundException("""
-                        Operation aborted, Skill with name '%s' not found!
-                        """.formatted(skillName));
+                        Operation aborted, Skill with name '%s' not found!"""
+                        .formatted(skillName));
             skillSelections.add(
                     new SkillSelection_Entity(
                             session,

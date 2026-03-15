@@ -6,12 +6,11 @@ import nkemrocks.anyteam_v1.dto.team.request.Team_Play_RequestDTO;
 import nkemrocks.anyteam_v1.dto.team.response.Team_Create_ResponseDTO;
 import nkemrocks.anyteam_v1.dto.team.response.Team_Fetch_ResponseDTO;
 import nkemrocks.anyteam_v1.dto.team.response.Team_Play_ResponseDTO;
-import nkemrocks.anyteam_v1.mapper.Team_Mapper;
+import nkemrocks.anyteam_v1.exception.ControllerException;
 import nkemrocks.anyteam_v1.service.Team_Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,11 +41,10 @@ public class Team_Controller {
           @RequestParam(required = false) String name
     ){
         if (id == null && (name == null || name.trim().isBlank()))
-            throw new ResponseStatusException(
+            throw new ControllerException(
                     HttpStatus.BAD_REQUEST, """
-                    You must provide either the team ID(recommended) or team name to find the team.
-                    For example, /find?id=3, or /find?name=ABC
-                    """
+                    You must provide either the team ID(recommended) or team name to find the team. \
+                    For example, /find?id=3, or /find?name=ABC"""
             );
         Team_Fetch_ResponseDTO response =  id != null ?
                 teamService.findTeam(id) :
