@@ -14,6 +14,7 @@ import nkemrocks.anyteam_v1.mapper.Team_Mapper;
 import nkemrocks.anyteam_v1.projection.Player_Details_Projection;
 import nkemrocks.anyteam_v1.projection.Team_Details_Projection;
 import nkemrocks.anyteam_v1.repository.*;
+import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,7 +29,6 @@ public class Team_Service {
     private final Team_Repository teamRepository;
     private final Player_Repository playerRepository;
     private final Stats_Repository statsRepository;
-    private final SysConfig_Repository sysConfigRepository;
     private final Session_Repository sessionRepository;
     private final SkillSelection_Repository skillSelectionRepository;
     private final SkillRating_Repository skillRatingRepository;
@@ -44,27 +44,26 @@ public class Team_Service {
          * 4.  Then return the response
          */
 
-        /* 1a. Confirm the <Creation> session has been initialized */
-        SysConfig_Entity sysConfig = sysConfigRepository.findById(1L)
-                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) record is not yet initialized!"));
-        Session_Entity creationSession = sysConfig.getCreationSession();
+        /* 1a. Confirm the <config> session has been initialized */
+        Session_Entity configSession = sessionRepository.findBySessionName(GlobalUtil.configSessionName)
+                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) session is not yet initialized!"));
 
         /* 1b. Confirm it is still open */
-        if (Instant.now().isAfter(creationSession.getDateCreated().plusSeconds(creationSession.getTtl())))
-            throw new SessionExpiredException("Session for creating new teams/players/sessions have expired!");
+        if (Instant.now().isAfter(configSession.getDateCreated().plusSeconds(configSession.getTtl())))
+            throw new SessionExpiredException("Config session for creating new teams/players/sessions has expired!");
 
         /* 2. Create and save the new team */
         Team_Entity team = teamRepository.save(
                 new Team_Entity(
                         data.teamName(),
-                        creationSession
+                        configSession
                 ));
 
         /* 3.  Generate the default stats and save */
         Stats_Entity stats = statsRepository.save(
                 new Stats_Entity(
                         0, 0, 50,
-                        creationSession,
+                        configSession,
                         team,
                         new HashSet<>()
                 )

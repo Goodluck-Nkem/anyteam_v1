@@ -13,10 +13,8 @@ import nkemrocks.anyteam_v1.entity.*;
 import nkemrocks.anyteam_v1.exception.ResourceNotFoundException;
 import nkemrocks.anyteam_v1.exception.ServiceUnavailableException;
 import nkemrocks.anyteam_v1.exception.SessionExpiredException;
-import nkemrocks.anyteam_v1.repository.SkillRating_Repository;
-import nkemrocks.anyteam_v1.repository.Skill_Repository;
-import nkemrocks.anyteam_v1.repository.SysConfig_Repository;
-import nkemrocks.anyteam_v1.repository.Player_Repository;
+import nkemrocks.anyteam_v1.repository.*;
+import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -30,27 +28,26 @@ public class Player_Service {
     private final Player_Repository playerRepository;
     private final Skill_Repository skillRepository;
     private final SkillRating_Repository skillRatingRepository;
-    private final SysConfig_Repository sysConfigRepository;
+    private final Session_Repository sessionRepository;
 
     @Transactional
     public Player_Create_ResponseDTO createPlayer(Player_Create_RequestDTO data) {
 
         /* STEPS:
-         * 1a. Confirm the <Creation> session has been initialized
+         * 1a. Confirm the <config> session has been initialized
          * 1b. Confirm it is still open
          * 2.  Create and save the new player
          * 3.  Generate the new skillRatings and save
          * 4.  Return the player details
          */
 
-        /* 1a. Confirm the <Creation> session has been initialized */
-        SysConfig_Entity sysConfig = sysConfigRepository.findById(1L)
-                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) record is not yet initialized!"));
-        Session_Entity creationSession = sysConfig.getCreationSession();
+        /* 1a. Confirm the <config> session has been initialized */
+        Session_Entity configSession = sessionRepository.findBySessionName(GlobalUtil.configSessionName)
+                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) session is not yet initialized!"));
 
         /* 1b. Confirm it is still open */
-        if (Instant.now().isAfter(creationSession.getDateCreated().plusSeconds(creationSession.getTtl())))
-            throw new SessionExpiredException("Session for creating new teams/players/sessions have expired!");
+        if (Instant.now().isAfter(configSession.getDateCreated().plusSeconds(configSession.getTtl())))
+            throw new SessionExpiredException("Config session for creating new teams/players/sessions has expired!");
 
         /* 2. Create and save the new player */
         Player_Entity player = playerRepository.save(

@@ -17,7 +17,7 @@ public class SysConfig_Controller {
 
     @PostMapping
     public ResponseEntity<SysConfig_ResponseDTO> init(@Valid @RequestBody SysConfig_RequestDTO data) {
-        SysConfig_ResponseDTO response = sysConfigService.initCreationSession(data);
+        SysConfig_ResponseDTO response = sysConfigService.initConfigSession(data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

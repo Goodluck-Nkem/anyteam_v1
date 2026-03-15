@@ -20,12 +20,6 @@ public interface Session_Repository extends JpaRepository<Session_Entity, UUID> 
     List<UUID> getIds_findAll();
 
     @Query("""
-            SELECT s FROM Session_Entity s
-            WHERE s.sessionName LIKE CONCAT('%', :nameContent, '%')
-            """)
-    List<Session_Entity> searchBySessionNameContaining(String nameContent);
-
-    @Query("""
             SELECT s.id FROM Session_Entity s
             WHERE s.sessionName LIKE CONCAT('%', :nameContent, '%')
             """)

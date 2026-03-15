@@ -88,7 +88,7 @@ public class SysConfigControllerTests {
     void testThat_GetInfoWithValidSysConfigSucceeds() throws Exception {
         printCurrentTestMethodRef();
 
-        sysConfigService.initCreationSession(new SysConfig_RequestDTO(3600));
+        sysConfigService.initConfigSession(new SysConfig_RequestDTO(3600));
 
         mockMvc.perform(get("/api/v1/sysconfig"))
                 .andDo(printResponseField("$.ttl"))

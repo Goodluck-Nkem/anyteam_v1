@@ -21,10 +21,18 @@ public class GlobalExceptionHandler {
     /* --- Generic exception --- */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
+        Throwable currentCause = exception;
+        StringBuilder exMsgBuilder = new StringBuilder("");
+        while(currentCause != null){
+            exMsgBuilder.append(" --- <")
+                    .append(currentCause.getClass().getName())
+                    .append("> :: ").append(currentCause.getMessage());
+            currentCause = currentCause.getCause();
+        }
         return new ResponseEntity<>(
-                new Error_DTO(
-                        "An Internal/Unexpected error occurred! :: "
-                                + exception.getMessage()),
+                new Error_DTO("""
+                        An Internal/Unexpected error occurred! =>%s
+                        """.formatted(exMsgBuilder)),
                 HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
         );
     }

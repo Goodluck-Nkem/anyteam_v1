@@ -10,7 +10,6 @@ import nkemrocks.anyteam_v1.dto.session.response.Session_Update_ResponseDTO;
 import nkemrocks.anyteam_v1.entity.Session_Entity;
 import nkemrocks.anyteam_v1.entity.SkillSelection_Entity;
 import nkemrocks.anyteam_v1.entity.Skill_Entity;
-import nkemrocks.anyteam_v1.entity.SysConfig_Entity;
 import nkemrocks.anyteam_v1.exception.ResourceNotFoundException;
 import nkemrocks.anyteam_v1.exception.ServiceUnavailableException;
 import nkemrocks.anyteam_v1.exception.SessionExpiredException;
@@ -19,7 +18,7 @@ import nkemrocks.anyteam_v1.projection.Session_Details_Projection;
 import nkemrocks.anyteam_v1.repository.Session_Repository;
 import nkemrocks.anyteam_v1.repository.SkillSelection_Repository;
 import nkemrocks.anyteam_v1.repository.Skill_Repository;
-import nkemrocks.anyteam_v1.repository.SysConfig_Repository;
+import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -33,7 +32,6 @@ public class Session_Service {
     private final Session_Repository sessionRepository;
     private final Skill_Repository skillRepository;
     private final SkillSelection_Repository skillSelectionRepository;
-    private final SysConfig_Repository sysConfigRepository;
 
     @Transactional
     public Session_Create_ResponseDTO createSession(Session_Create_RequestDTO data) {
@@ -47,14 +45,13 @@ public class Session_Service {
          * 4.  Then return the mapped response
          */
 
-        /* 1a. Confirm the <Creation> session has been initialized */
-        SysConfig_Entity sysConfig = sysConfigRepository.findById(1L)
-                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) record is not yet initialized!"));
-        Session_Entity creationSession = sysConfig.getCreationSession();
+        /* 1a. Confirm the <config> session has been initialized */
+        Session_Entity configSession = sessionRepository.findBySessionName(GlobalUtil.configSessionName)
+                .orElseThrow(() -> new ServiceUnavailableException("System Configuration (sysConfig) session is not yet initialized!"));
 
         /* 1b. Confirm it is still open */
-        if (Instant.now().isAfter(creationSession.getDateCreated().plusSeconds(creationSession.getTtl())))
-            throw new SessionExpiredException("Session for creating new teams/players/sessions have expired!");
+        if (Instant.now().isAfter(configSession.getDateCreated().plusSeconds(configSession.getTtl())))
+            throw new SessionExpiredException("Config session for creating new teams/players/sessions has expired!");
 
         /* 2.  Create and save the new session */
         Session_Entity session = sessionRepository.save(
@@ -115,18 +112,17 @@ public class Session_Service {
     }
 
     public List<Session_Fetch_ResponseDTO> searchForSessions(String nameContent) {
-        /* Get search list of session IDs */
-        List<UUID> sessionIds = sessionRepository.getIds_SearchByNameContaining(nameContent);
-
         /* Get all search session details */
-        List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(sessionIds);
+        List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(
+                sessionRepository.getIds_SearchByNameContaining(nameContent)
+        );
 
         /* group by ID */
         Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
                 .collect(Collectors.groupingBy(Session_Details_Projection::getSessionId));
 
         /* return response list */
-        return sessionIds.stream()
+        return detailsMap.keySet().stream()
                 .map(sessionId -> sessionMapper.toFetch_ResponseDTO(
                         detailsMap.getOrDefault(sessionId, List.of())
                 ))
@@ -134,18 +130,17 @@ public class Session_Service {
     }
 
     public List<Session_Fetch_ResponseDTO> listAllSessions() {
-        /* Get all session IDs */
-        List<UUID> sessionIds = sessionRepository.getIds_findAll();
-
         /* Get all session details */
-        List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(sessionIds);
+        List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(
+                sessionRepository.getIds_findAll()
+        );
 
         /* group by ID */
         Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
                 .collect(Collectors.groupingBy(Session_Details_Projection::getSessionId));
 
         /* return response list */
-        return sessionIds.stream()
+        return detailsMap.keySet().stream()
                 .map(sessionId -> sessionMapper.toFetch_ResponseDTO(
                         detailsMap.getOrDefault(sessionId, List.of())
                 ))

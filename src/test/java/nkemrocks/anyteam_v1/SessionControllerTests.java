@@ -30,7 +30,7 @@ public class SessionControllerTests {
 
     @BeforeEach
     void initTestEnv(){
-        sysConfigService.initCreationSession(
+        sysConfigService.initConfigSession(
                 new SysConfig_RequestDTO(
                         3600
                 ));

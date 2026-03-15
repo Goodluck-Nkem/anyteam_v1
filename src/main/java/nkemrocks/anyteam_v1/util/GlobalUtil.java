@@ -32,5 +32,5 @@ public class GlobalUtil {
     public static final String SPELLING = "spelling";
     public static final String SPORT = "sport";
     public static final String TECHNOLOGY = "technology";
-    public static String creationSessionName = "<create>";
+    public static String configSessionName = "<config>";
 }
