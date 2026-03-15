@@ -7,9 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skills__skill_name;
+
 
 @Entity
-@Table(name = "skills")
+@Table(name = "skills", uniqueConstraints = {
+        @UniqueConstraint(
+                name = UK__skills__skill_name,
+                columnNames = {"skill_name"})
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
@@ -24,7 +30,7 @@ public class Skill_Entity {
     /* required-set fields */
     /* ---- ++++++++++++++ ---- */
     @NonNull
-    @Column(nullable = false, unique = true)
+    @Column(name = "skill_name", nullable = false)
     String skillName;
 
 

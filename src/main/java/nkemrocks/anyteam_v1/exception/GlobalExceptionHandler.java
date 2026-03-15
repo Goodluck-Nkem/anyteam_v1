@@ -2,6 +2,8 @@ package nkemrocks.anyteam_v1.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import nkemrocks.anyteam_v1.dto.Error_DTO;
+import nkemrocks.anyteam_v1.util.ConstraintRelatedStrings;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,7 +18,18 @@ import org.springframework.web.server.ResponseStatusException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    /* --- Built-in Runtime Exceptions --- */
+    /* --- Generic exception --- */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
+        return new ResponseEntity<>(
+                new Error_DTO(
+                        "An Internal/Unexpected error occurred! :: "
+                                + exception.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
+        );
+    }
+
+    /* --- Spring-defined Runtime Exceptions --- */
 
     @ExceptionHandler(DataAccessResourceFailureException.class)
     public ResponseEntity<Error_DTO> dataAccessResourceFailureExceptionHandler(DataAccessResourceFailureException exception) {
@@ -28,8 +41,33 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Error_DTO> dataIntegrityViolationExceptionHandler(DataIntegrityViolationException exception) {
+        String errorMessage = null;
+        Throwable currentCause = exception;
+        while (currentCause != null) {
+            /* -- if ConstraintViolationException, then return a specific or generic constraint violation message -- */
+            if (currentCause instanceof ConstraintViolationException cve) {
+                String constraintName = cve.getConstraintName() != null ? cve.getConstraintName().toLowerCase() : "";
+                for (String key : ConstraintRelatedStrings.map.keySet()) {
+                    /* specific constraint violation message */
+                    if (constraintName.contains(key)) {
+                        errorMessage = ConstraintRelatedStrings.map.get(key);
+                        break;
+                    }
+                }
+
+                /* generic constraint violation message */
+                if (errorMessage == null)
+                    errorMessage = "Database Constraint violation occurred!";
+                break;
+            }
+
+            /* -- otherwise keep searching for cause -- */
+            currentCause = currentCause.getCause();
+        }
+
+        /* -- return errorMessage or generic Integrity violation message -- */
         return new ResponseEntity<>(
-                new Error_DTO("Database integrity violation occurred!"),
+                new Error_DTO(errorMessage != null ? errorMessage : "Database integrity violation occurred!"),
                 HttpStatus.CONFLICT /* 409 */
         );
     }
@@ -90,14 +128,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ReplayAttemptException.class)
-    public ResponseEntity<Error_DTO> replayAttemptExceptionHandler(ReplayAttemptException exception) {
-        return new ResponseEntity<>(
-                new Error_DTO(exception.getMessage()),
-                HttpStatus.FORBIDDEN  /* 403 */
-        );
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Error_DTO> resourceNotFoundExceptionHandler(ResourceNotFoundException exception) {
         return new ResponseEntity<>(
@@ -119,17 +149,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new Error_DTO(exception.getMessage()),
                 HttpStatus.FORBIDDEN  /* 403 */
-        );
-    }
-
-    /* --- Generic exception --- */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Error_DTO> genericExceptionHandler(Exception exception) {
-        return new ResponseEntity<>(
-                new Error_DTO(
-                        "An Internal/Unexpected error occurred! :: "
-                                + exception.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR /* 500 */
         );
     }
 

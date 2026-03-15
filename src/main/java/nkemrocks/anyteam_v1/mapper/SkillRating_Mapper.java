@@ -24,8 +24,6 @@ public class SkillRating_Mapper {
         return new SkillRating_ResponseDTO(
                 first.getUserName(),
                 first.getDateCreated(),
-                first.getSessionName(),
-                first.getDateSessionCreated(),
                 skillRatingsMap,
                 aggregate / skillRatingsMap.size()
         );

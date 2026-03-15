@@ -65,7 +65,8 @@ public class Team_Service {
                 new Stats_Entity(
                         0, 0, 50,
                         creationSession,
-                        team
+                        team,
+                        new HashSet<>()
                 )
         );
 
@@ -81,14 +82,12 @@ public class Team_Service {
     @Transactional
     public Team_Play_ResponseDTO play(Team_Play_RequestDTO data) {
         /* STEPS:
-         * 1a.  Confirm session is still open
-         * 1b.  Fetch skill selections for this session
-         * 2.   Confirm session-team stats doesn't already exist
+         * 1.   Confirm session is still open
+         * 2.   Fetch skill selections for this session
          * 3.   Confirm team exists, then Generate entropy and score using each compatible player
-         * 4.   Update new rating, add new stats, update team lastActiveSession
-         * 5.   For each player, Create new skillRatings, append data to playerSummary list
-         * 6.   Do batch update of players lastActiveSession
-         * 7.   Create and return the play response.
+         * 4.   Save new Stats containing entropy, teamScore, teamRatings, lastActiveSession, team and member players
+         * 5.   For each player, update skillRatings, append data to playerSummary list
+         * 6.   Create and return the play response.
          */
 
         /* 1a.  Confirm session is still open */
@@ -98,15 +97,8 @@ public class Team_Service {
         if (Instant.now().isAfter(expiryDate))
             throw new SessionExpiredException("Session for this event expired at " + expiryDate);
 
-        /* 1b.  Fetch skill selections for this session */
-        List<Long> skillIds = skillSelectionRepository.getSkillIds(data.sessionId());
-
-        /*  2.   Confirm session-team stats doesn't already exist */
-        if (null != statsRepository.findByTeamSessionPair(data.teamId(), data.sessionId())
-                .orElse(null))
-            throw new ReplayAttemptException("""
-                    Team with ID='%s', already has a score for session with ID='%s'
-                    """.formatted(data.teamId(), data.sessionId()));
+        /* 2.  Fetch skill selections for this session */
+        List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(data.sessionId());
 
         /* 3.   Confirm team exists, then Generate entropy and score using each compatible player */
         Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionById(data.teamId())
@@ -152,14 +144,14 @@ public class Team_Service {
                         """.formatted(playerId, average, oldTeamRating));
 
             /* Aggregate for the selected skill using current stats */
-            for (Long skillId : skillIds) {
+            for (Long skillId : sessionSkillIds) {
                 n++;
                 aggregate += ratingsMap.getOrDefault(skillId, 0);
             }
 
         }
 
-        /* 4.   Create new Stats containing entropy, teamScore, teamRatings, lastActiveSession */
+        /* 4.   Save new Stats containing entropy, teamScore, teamRatings, lastActiveSession, team and member players */
         teamScore = aggregate / n;
         final int newTeamRating = (oldTeamRating + teamScore) / 2;
         Stats_Entity stats = statsRepository.save(
@@ -168,7 +160,10 @@ public class Team_Service {
                         entropy,
                         newTeamRating,
                         session,
-                        teamRepository.getReferenceById(data.teamId())
+                        teamRepository.getReferenceById(data.teamId()),
+                        data.playerIds().stream()
+                                .map(playerRepository::getReferenceById)
+                                .collect(Collectors.toSet())
                 )
         );
 
@@ -177,7 +172,7 @@ public class Team_Service {
                     Team with ID '%s' couldn't update its last active session reference!
                     """.formatted(data.teamId()));
 
-        /* 5.   For each player, Create new skillRatings, append data to playerSummary list */
+        /* 5.   For each player, update skillRatings, append data to playerSummary list */
         List<Team_PlayerSummary_DTO> playerSummaries = new ArrayList<>();
         for (UUID playerId : data.playerIds()) {
 
@@ -186,14 +181,19 @@ public class Team_Service {
             int newPlayerRatingsSum = oldPlayerRatingsSum;
             Map<Long, Integer> ratingsMap = playerMapOfRatingsMap.get(playerId);
 
-            for (Long skillId : skillIds) {
-                int oldSkillValue = ratingsMap.getOrDefault(skillId, 0);
+            int oldRatingsCount = playerDetails.size();
+            int newRatingsCount = playerDetails.size();
+            for (Long skillId : sessionSkillIds) {
+                Integer oldSkillValue = ratingsMap.get(skillId);
+                if(oldSkillValue == null){
+                    oldSkillValue = 0;
+                    newRatingsCount++;
+                }
                 int skillRatingValue = (oldSkillValue + teamScore) / 2;
                 newPlayerRatingsSum += (skillRatingValue - oldSkillValue);
                 skillRatingRepository.save(
                         new SkillRating_Entity(
                                 playerRepository.getReferenceById(playerId),
-                                session,
                                 skillRepository.getReferenceById(skillId),
                                 skillRatingValue
                         )
@@ -203,24 +203,13 @@ public class Team_Service {
             playerSummaries.add(
                     new Team_PlayerSummary_DTO(
                             playerDetails.getFirst().getUserName(),
-                            oldPlayerRatingsSum / playerDetails.size(),
-                            newPlayerRatingsSum / playerDetails.size()
+                            oldPlayerRatingsSum / oldRatingsCount,
+                            newPlayerRatingsSum / newRatingsCount
                     )
             );
         }
 
-
-        /* 6.   Do batch update of players lastActiveSession */
-        int rowsUpdated = playerRepository.updateActiveSession(
-                new ArrayList<>(data.playerIds()),
-                data.sessionId()
-        );
-        if (rowsUpdated != data.playerIds().size())
-            throw new PersistenceException("""
-                    All specified Player rows did not update, instead %d out of %d, hence operation aborted!
-                    """.formatted(rowsUpdated, data.playerIds().size()));
-
-        /* 7.   Create and return the Play response. */
+        /* 6.   Create and return the Play response. */
         return new Team_Play_ResponseDTO(
                 session.getSessionName(),
                 teamDetails.getTeamName(),

@@ -16,14 +16,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.UUID;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.trimAndLower;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/team")
 public class Team_Controller {
     private final Team_Service teamService;
-    private final Team_Mapper teamMapper;
 
     @PostMapping("/create")
     public ResponseEntity<Team_Create_ResponseDTO> create(@Valid @RequestBody Team_Create_RequestDTO data){

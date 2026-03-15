@@ -5,11 +5,14 @@ import lombok.*;
 
 import java.util.Objects;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skill_selections__session_id__skill_id;
+
 @Entity
-@Table(name = "skillSelection",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "Unique_Session_Skill", columnNames = {"session_id", "skill_id"})
-        })
+@Table(name = "skill_selections", uniqueConstraints = {
+        @UniqueConstraint(
+                name = UK__skill_selections__session_id__skill_id,
+                columnNames = {"session_id", "skill_id"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

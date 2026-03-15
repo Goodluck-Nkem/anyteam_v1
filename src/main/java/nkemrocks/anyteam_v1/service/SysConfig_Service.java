@@ -2,7 +2,7 @@ package nkemrocks.anyteam_v1.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import nkemrocks.anyteam_v1.GlobalUtil;
+import nkemrocks.anyteam_v1.util.GlobalUtil;
 import nkemrocks.anyteam_v1.dto.sysConfig.request.SysConfig_RequestDTO;
 import nkemrocks.anyteam_v1.dto.sysConfig.response.SysConfig_ResponseDTO;
 import nkemrocks.anyteam_v1.entity.Session_Entity;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.*;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.*;
 
 @Service
 @RequiredArgsConstructor

@@ -7,8 +7,14 @@ import lombok.*;
 import java.time.Instant;
 import java.util.*;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__players__user_name;
+
 @Entity
-@Table(name = "players")
+@Table(name = "players", uniqueConstraints = {
+        @UniqueConstraint(
+                name = UK__players__user_name,
+                columnNames = {"user_name"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,7 +56,7 @@ public class Player_Entity {
     /* required-set fields */
     /* ---- ++++++++++++++ ---- */
     @NonNull
-    @Column(nullable = false, unique = true)
+    @Column(name = "user_name", nullable = false)
     private String userName;
 
     @NonNull
@@ -61,22 +67,13 @@ public class Player_Entity {
     @Column(nullable = false)
     private String lastName;
 
-    @NonNull
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "last_active_session_id", nullable = false)
-    private Session_Entity lastActiveSession;
-
-
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "player")
-    private List<SkillRating_Entity> skillRatingCollection = new ArrayList<>();
+    private List<SkillRating_Entity> skillRatings = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(name = "junction_player_stats",
-            joinColumns = @JoinColumn(name = "player_id"),
-            inverseJoinColumns = @JoinColumn(name = "stats_id"))
+    @ManyToMany(mappedBy = "players")
     private Set<Stats_Entity> stats = new HashSet<>();
 
 

@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "sysConfig")
+@Table(name = "sys_config")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

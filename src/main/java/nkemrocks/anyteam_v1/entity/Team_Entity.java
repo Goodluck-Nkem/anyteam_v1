@@ -10,8 +10,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__teams__team_name;
+
 @Entity
-@Table(name = "team")
+@Table(name = "teams", uniqueConstraints = {
+        @UniqueConstraint(
+                name = UK__teams__team_name,
+                columnNames = {"team_name"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,7 +48,7 @@ public class Team_Entity {
     /* required-set fields */
     /* ---- ++++++++++++++ ---- */
     @NonNull
-    @Column(nullable = false, unique = true)
+    @Column(name = "team_name", nullable = false)
     private String teamName;
 
     @NonNull

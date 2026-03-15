@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 import java.util.UUID;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.trim;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.trim;
 
 public record Player_Update_RequestDTO(
 

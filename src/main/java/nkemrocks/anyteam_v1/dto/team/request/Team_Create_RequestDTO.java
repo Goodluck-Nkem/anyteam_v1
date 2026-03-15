@@ -3,7 +3,7 @@ package nkemrocks.anyteam_v1.dto.team.request;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.trimAndLower;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
 
 public record Team_Create_RequestDTO(
         @NotBlank(message = ERROR_NAME_BLANK)

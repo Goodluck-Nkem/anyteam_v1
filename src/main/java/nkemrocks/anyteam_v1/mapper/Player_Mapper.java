@@ -31,8 +31,6 @@ public class Player_Mapper {
                 first.getLastName(),
                 first.getDateCreated(),
                 first.getDateUpdated(),
-                first.getSessionName(),
-                first.getDateSessionCreated(),
                 skillRatingsMap,
                 aggregate / skillRatingsMap.size()
         );

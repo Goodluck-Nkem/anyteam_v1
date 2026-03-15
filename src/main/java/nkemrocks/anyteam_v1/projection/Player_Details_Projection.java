@@ -11,9 +11,6 @@ public interface Player_Details_Projection {
     Instant getDateCreated();
     Instant getDateUpdated();
 
-    String getSessionName();
-    Instant getDateSessionCreated();
-
     Long getSkillId();
     String getSkillName();
     Integer getSkillRating();

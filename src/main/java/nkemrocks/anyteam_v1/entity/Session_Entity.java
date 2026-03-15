@@ -10,8 +10,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__sessions__session_name;
+
 @Entity
-@Table(name = "sessions")
+@Table(name = "sessions", uniqueConstraints = {
+        @UniqueConstraint(
+                name = UK__sessions__session_name,
+                columnNames = {"session_name"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -20,7 +26,7 @@ public class Session_Entity {
 
     @Id
     @Column(updatable = false, nullable = false)
-    UUID id = UuidCreator.getTimeOrderedEpoch();;
+    UUID id = UuidCreator.getTimeOrderedEpoch();
 
     /* we got prepersist-set, required-set and default-set fields */
 
@@ -52,7 +58,7 @@ public class Session_Entity {
     /* required-set fields */
     /* ---- ++++++++++++++ ---- */
     @NonNull
-    @Column(nullable = false, unique = true)
+    @Column(name = "session_name", nullable = false)
     private String sessionName;
 
     /** Time-To-Live in seconds */
@@ -66,9 +72,6 @@ public class Session_Entity {
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "session")
     private List<Stats_Entity> stats = new ArrayList<>();
-
-    @OneToMany(mappedBy = "session")
-    private List<SkillRating_Entity> skillRatings = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
     private List<SkillSelection_Entity> skillSelections = new ArrayList<>();

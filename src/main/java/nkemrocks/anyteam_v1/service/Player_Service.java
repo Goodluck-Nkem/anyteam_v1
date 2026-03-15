@@ -57,8 +57,7 @@ public class Player_Service {
                 new Player_Entity(
                         data.userName(),
                         data.firstName(),
-                        data.lastName(),
-                        creationSession
+                        data.lastName()
                 ));
 
         /* 3.  Generate the new skillRatings and save */
@@ -106,7 +105,6 @@ public class Player_Service {
             playerSkillRatings.add(
                     new SkillRating_Entity(
                             player,
-                            creationSession,
                             skill,
                             value
                     ));

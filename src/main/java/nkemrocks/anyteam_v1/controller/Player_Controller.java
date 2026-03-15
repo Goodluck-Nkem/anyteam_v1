@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.UUID;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.trimAndLower;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
 
 @RestController
 @RequiredArgsConstructor

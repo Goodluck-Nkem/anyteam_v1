@@ -16,10 +16,6 @@ public record Player_Fetch_ResponseDTO(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
         Instant dateUpdated,
 
-        String sessionName,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
-        Instant dateSessionCreated,
-
         Map<String, Integer> skillRatings,
         Integer averageRating
 ) {

@@ -6,11 +6,14 @@ import lombok.*;
 import java.time.Instant;
 import java.util.*;
 
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__stats__team_id__session_id;
+
 @Entity
-@Table(name = "stats",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "Unique_Team_Session", columnNames = {"team_id", "session_id"})
-        })
+@Table(name = "stats", uniqueConstraints = {
+                @UniqueConstraint(
+                        name = UK__stats__team_id__session_id,
+                        columnNames = {"team_id", "session_id"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -63,12 +66,17 @@ public class Stats_Entity {
     @JoinColumn(name = "team_id", nullable = false)
     private Team_Entity team;
 
+    @NonNull
+    @ManyToMany
+    @JoinTable(name = "junction__stats__players",
+            joinColumns = @JoinColumn(name = "stats_id"),
+            inverseJoinColumns = @JoinColumn(name = "player_id"))
+    private Set<Player_Entity> players;
+
 
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
-    @ManyToMany(mappedBy = "stats")
-    private Set<Player_Entity> players = new HashSet<>();
 
 
     /* ---- ++++++++++++++ ---- */

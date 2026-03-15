@@ -2,14 +2,14 @@ package nkemrocks.anyteam_v1.dto.player.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import nkemrocks.anyteam_v1.GlobalUtil;
+import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static nkemrocks.anyteam_v1.GlobalUtil.*;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.*;
 
 /* Matches the body of the player_create post request */
 public record Player_Create_RequestDTO(

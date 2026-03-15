@@ -1,4 +1,4 @@
-package nkemrocks.anyteam_v1;
+package nkemrocks.anyteam_v1.util;
 
 /**
  * This is a utility class, so All methods are expected to be public static, so that an instance is not required
