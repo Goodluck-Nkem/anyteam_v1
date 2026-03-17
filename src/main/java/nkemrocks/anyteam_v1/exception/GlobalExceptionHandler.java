@@ -176,14 +176,6 @@ public class GlobalExceptionHandler {
 
     /* --- Custom Runtime Exceptions --- */
 
-    @ExceptionHandler(ControllerException.class)
-    public ResponseEntity<Error_DTO> controllerExceptionHandler(ControllerException exception) {
-        return new ResponseEntity<>(
-                new Error_DTO(exception.getMessage()),
-                exception.getHttpStatusCode()
-        );
-    }
-
     @ExceptionHandler(PersistenceException.class)
     public ResponseEntity<Error_DTO> persistenceExceptionHandler(PersistenceException exception) {
         return new ResponseEntity<>(
@@ -192,11 +184,11 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(RatingLimitException.class)
-    public ResponseEntity<Error_DTO> ratingLimitExceptionHandler(RatingLimitException exception) {
+    @ExceptionHandler(PolicyException.class)
+    public ResponseEntity<Error_DTO> policyExceptionHandler(PolicyException exception) {
         return new ResponseEntity<>(
                 new Error_DTO(exception.getMessage()),
-                HttpStatus.FORBIDDEN  /* 403 */
+                exception.getHttpStatusCode()
         );
     }
 

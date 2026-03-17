@@ -117,9 +117,13 @@ public class Session_Service {
                 sessionRepository.getIds_SearchByNameContaining(nameContent)
         );
 
-        /* group by ID */
+        /* group by ID (maintaining stream order) */
         Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
-                .collect(Collectors.groupingBy(Session_Details_Projection::getSessionId));
+                .collect(Collectors.groupingBy(
+                        Session_Details_Projection::getSessionId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         /* return response list */
         return detailsMap.keySet().stream()
@@ -135,9 +139,13 @@ public class Session_Service {
                 sessionRepository.getIds_findAll()
         );
 
-        /* group by ID */
+        /* group by ID (maintaining stream order) */
         Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
-                .collect(Collectors.groupingBy(Session_Details_Projection::getSessionId));
+                .collect(Collectors.groupingBy(
+                        Session_Details_Projection::getSessionId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         /* return response list */
         return detailsMap.keySet().stream()

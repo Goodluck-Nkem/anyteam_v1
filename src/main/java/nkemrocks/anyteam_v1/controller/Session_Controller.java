@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nkemrocks.anyteam_v1.dto.session.request.*;
 import nkemrocks.anyteam_v1.dto.session.response.*;
-import nkemrocks.anyteam_v1.exception.ControllerException;
+import nkemrocks.anyteam_v1.exception.PolicyException;
 import nkemrocks.anyteam_v1.service.Session_Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +39,7 @@ public class Session_Controller {
             @RequestParam(required = false) String name
     ) {
         if (id == null && (name == null || name.trim().isBlank()))
-            throw new ControllerException(
+            throw new PolicyException(
                     HttpStatus.BAD_REQUEST, """
                     You must provide either the session ID(recommended) or session name to find the session. \
                     For example, /find?id=3, or /find?name=ABC""");

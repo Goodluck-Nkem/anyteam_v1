@@ -1,6 +1,11 @@
+TTL="$1"
+if [ "$#" -eq 0 ]; then
+	TTL=0
+fi
+
 DATA_TTL=$(cat <<EOF
 { 
-	"ttl": 3600 
+	"ttl": $TTL
 }
 EOF
 )

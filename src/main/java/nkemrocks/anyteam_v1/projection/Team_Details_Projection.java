@@ -9,13 +9,6 @@ public interface Team_Details_Projection {
     String getTeamName();
     Instant getDateCreated();
 
-    String getSessionName();
-    Instant getDateSessionCreated();
-
-    Long getStatsId();
-    Integer getTeamScore();
-    Integer getEntropy();
     Integer getTeamRating();
-    Instant getDateStatsCreated();
 
 }

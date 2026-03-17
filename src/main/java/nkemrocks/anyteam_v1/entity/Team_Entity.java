@@ -60,7 +60,8 @@ public class Team_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "team")
-    private List<Stats_Entity> statsCollection = new ArrayList<>();
+    private List<Result_Entity> results = new ArrayList<>();
+
 
     /* ---- ++++++++++++++ ---- */
     /* equals and hashcode */

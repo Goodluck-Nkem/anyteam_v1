@@ -13,21 +13,17 @@ import java.util.UUID;
 
 @Repository
 public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
-    Optional<Team_Entity> findByTeamName(String name);
-
+    
     @Query("""
             SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
-                    s.sessionName AS sessionName, s.dateCreated AS dateSessionCreated,
-                    st.id AS statsId, st.teamScore AS teamScore, st.entropy AS entropy,
-                    st.teamRating AS teamRating, st.dateCreated AS dateStatsCreated
+                    r.teamRating AS teamRating
             
-            FROM    Stats_Entity st
+            FROM    Result_Entity r
             
-            JOIN    st.team t
-            JOIN    st.session s
+            JOIN    r.team t
             
             WHERE   t.id = :teamId
-            AND     s.id = t.lastActiveSession.id
+            AND     r.session.id = t.lastActiveSession.id
             """)
     Optional<Team_Details_Projection> getDetailsProjectionById(UUID teamId);
 
@@ -41,33 +37,27 @@ public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
 
     @Query("""
             SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
-                    s.sessionName AS sessionName, s.dateCreated AS dateSessionCreated,
-                    st.id AS statsId, st.teamScore AS teamScore, st.entropy AS entropy,
-                    st.teamRating AS teamRating, st.dateCreated AS dateStatsCreated
+                    r.teamRating AS teamRating
             
-            FROM    Stats_Entity st
+            FROM    Result_Entity r
             
-            JOIN    st.team t
-            JOIN    st.session s
+            JOIN    r.team t
             
             WHERE   t.teamName = :teamName
-            AND     s.id = t.lastActiveSession.id
+            AND     r.session.id = t.lastActiveSession.id
             """)
     Optional<Team_Details_Projection> getDetailsProjectionByName(String teamName);
 
     @Query("""
             SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
-                    s.sessionName AS sessionName, s.dateCreated AS dateSessionCreated,
-                    st.id AS statsId, st.teamScore AS teamScore, st.entropy AS entropy,
-                    st.teamRating AS teamRating, st.dateCreated AS dateStatsCreated
+                    r.teamRating AS teamRating
             
-            FROM    Stats_Entity st
+            FROM    Result_Entity r
             
-            JOIN    st.team t
-            JOIN    st.session s
+            JOIN    r.team t
             
             WHERE   t.teamName LIKE CONCAT('%', :nameContent, '%')
-            AND     s.id = t.lastActiveSession.id
+            AND     r.session.id = t.lastActiveSession.id
             
             ORDER BY t.teamName ASC
             """)
@@ -75,16 +65,13 @@ public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
 
     @Query("""
             SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
-                    s.sessionName AS sessionName, s.dateCreated AS dateSessionCreated,
-                    st.id AS statsId, st.teamScore AS teamScore, st.entropy AS entropy,
-                    st.teamRating AS teamRating, st.dateCreated AS dateStatsCreated
+                    r.teamRating AS teamRating
             
-            FROM    Stats_Entity st
+            FROM    Result_Entity r
             
-            JOIN    st.team t
-            JOIN    st.session s
+            JOIN    r.team t
             
-            WHERE   s.id = t.lastActiveSession.id
+            WHERE   r.session.id = t.lastActiveSession.id
             
             ORDER BY t.teamName ASC
             """)

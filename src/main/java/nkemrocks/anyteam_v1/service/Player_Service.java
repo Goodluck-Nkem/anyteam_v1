@@ -71,7 +71,7 @@ public class Player_Service {
 
         /* 1a.  Init focus fields */
         final int[] map = {40, 100, 95, 90, 80, 70, 60, 50, 45, 40};
-        final int focusSize = data.focus_set().size() >= 10 ? 0 : data.focus_set().size();
+        final int focusSize = data.skillFocus().size() >= 10 ? 0 : data.skillFocus().size();
         final int eachFocus = map[focusSize];
         int remnant = 400 - (eachFocus * focusSize);
         final int ceil = (int) Math.ceil((float) remnant / (10 - focusSize));
@@ -85,7 +85,7 @@ public class Player_Service {
                 ));
 
         /* 1c.   Make sure focus set exists */
-        for (String focus : data.focus_set()) {
+        for (String focus : data.skillFocus()) {
             Skill_Entity skill = skillsMap.get(focus);
             if (skill == null)
                 throw new ResourceNotFoundException("Requested focus skill '" + focus + "' doesn't exist!");
@@ -96,7 +96,7 @@ public class Player_Service {
         Map<String, Integer> initialSkillRatingsMap = new HashMap<>();
         int aggregate = 0;
         for (Skill_Entity skill : skillsMap.values()) {
-            int value = data.focus_set().contains(skill.getSkillName()) ?
+            int value = data.skillFocus().contains(skill.getSkillName()) ?
                     eachFocus :
                     ((remnant -= ceil) < 0 ? remnant + ceil : ceil);
             playerSkillRatings.add(
@@ -160,18 +160,21 @@ public class Player_Service {
      * search players with name like this, also with pagination (default 10)
      */
     public List<Player_Fetch_ResponseDTO> searchForPlayers(String nameContent) {
-        /* Get search list of player IDs */
-        List<UUID> playerIds = playerRepository.getIds_SearchByNameContaining(nameContent);
-
         /* Get all searched players details */
-        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(playerIds);
+        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(
+                playerRepository.getIds_SearchByNameContaining(nameContent)
+        );
 
-        /* group by ID */
-        Map<UUID, List<Player_Details_Projection>> detailsMap =  playersDetails.stream()
-                .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
+        /* group by ID (maintain stream order) */
+        Map<UUID, List<Player_Details_Projection>> detailsMap = playersDetails.stream()
+                .collect(Collectors.groupingBy(
+                        Player_Details_Projection::getPlayerId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         /* return response list */
-        return playerIds.stream()
+        return detailsMap.keySet().stream()
                 .map(playerId -> playerMapper.toFetch_ResponseDTO(
                         detailsMap.getOrDefault(playerId, List.of())
                 ))
@@ -182,18 +185,21 @@ public class Player_Service {
      * List all players
      */
     public List<Player_Fetch_ResponseDTO> listAllPlayers() {
-        /* Get all player IDs */
-        List<UUID> playerIds = playerRepository.getIds_findAll();
-
         /* Get all player details */
-        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(playerIds);
+        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(
+                playerRepository.getIds_findAll()
+        );
 
-        /* group by ID */
-        Map<UUID, List<Player_Details_Projection>> detailsMap =  playersDetails.stream()
-                .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
+        /* group by ID (maintain stream order) */
+        Map<UUID, List<Player_Details_Projection>> detailsMap = playersDetails.stream()
+                .collect(Collectors.groupingBy(
+                        Player_Details_Projection::getPlayerId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         /* return response list */
-        return playerIds.stream()
+        return detailsMap.keySet().stream()
                 .map(playerId -> playerMapper.toFetch_ResponseDTO(
                         detailsMap.getOrDefault(playerId, List.of())
                 ))

@@ -27,7 +27,7 @@ public record Player_Create_RequestDTO(
         String lastName,
 
         @Size(max = 10, message = ERROR_SIZE_FOCUS_SET)
-        Set<@NotBlank(message = ERROR_SKILL_NAME_BLANK) String> focus_set
+        Set<@NotBlank(message = ERROR_SKILL_NAME_BLANK) String> skillFocus
 
 ) {
     private static final String ERROR_NAME_BLANK = "Name can't be blank!";
@@ -41,9 +41,9 @@ public record Player_Create_RequestDTO(
         userName = trimAndLower(userName);
         firstName = trim(firstName);
         lastName = trim(lastName);
-        focus_set = focus_set == null ?
+        skillFocus = skillFocus == null ?
                 new HashSet<>() :
-                focus_set
+                skillFocus
                         .stream()
                         .map(GlobalUtil::trimAndLower)
                         .collect(Collectors.toSet());

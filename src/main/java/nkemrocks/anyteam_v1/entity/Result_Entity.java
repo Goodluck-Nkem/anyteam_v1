@@ -6,19 +6,19 @@ import lombok.*;
 import java.time.Instant;
 import java.util.*;
 
-import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__stats__team_id__session_id;
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__results__team_id__session_id;
 
 @Entity
-@Table(name = "stats", uniqueConstraints = {
+@Table(name = "results", uniqueConstraints = {
                 @UniqueConstraint(
-                        name = UK__stats__team_id__session_id,
+                        name = UK__results__team_id__session_id,
                         columnNames = {"team_id", "session_id"})
 })
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
-public class Stats_Entity {
+public class Result_Entity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,17 +66,12 @@ public class Stats_Entity {
     @JoinColumn(name = "team_id", nullable = false)
     private Team_Entity team;
 
-    @NonNull
-    @ManyToMany
-    @JoinTable(name = "junction__stats__players",
-            joinColumns = @JoinColumn(name = "stats_id"),
-            inverseJoinColumns = @JoinColumn(name = "player_id"))
-    private Set<Player_Entity> players;
-
 
     /* ---- ++++++++++++++ ---- */
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
+    @OneToMany(mappedBy = "result")
+    private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */
@@ -85,7 +80,7 @@ public class Stats_Entity {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Stats_Entity that = (Stats_Entity) o;
+        Result_Entity that = (Result_Entity) o;
         return Objects.equals(id, that.id);
     }
 

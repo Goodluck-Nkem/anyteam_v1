@@ -73,8 +73,8 @@ public class Player_Entity {
     @OneToMany(mappedBy = "player")
     private List<SkillRating_Entity> skillRatings = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "players")
-    private Set<Stats_Entity> stats = new HashSet<>();
+    @OneToMany(mappedBy = "player")
+    private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

@@ -15,6 +15,7 @@ import nkemrocks.anyteam_v1.projection.Player_Details_Projection;
 import nkemrocks.anyteam_v1.projection.Team_Details_Projection;
 import nkemrocks.anyteam_v1.repository.*;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,11 +29,12 @@ public class Team_Service {
     private final Team_Mapper teamMapper;
     private final Team_Repository teamRepository;
     private final Player_Repository playerRepository;
-    private final Stats_Repository statsRepository;
+    private final Result_Repository resultRepository;
     private final Session_Repository sessionRepository;
     private final SkillSelection_Repository skillSelectionRepository;
     private final SkillRating_Repository skillRatingRepository;
     private final Skill_Repository skillRepository;
+    private final Junction_Team_Session_Player_Repository junctionTeamSessionPlayerRepository;
 
     @Transactional
     public Team_Create_ResponseDTO createTeam(Team_Create_RequestDTO data) {
@@ -40,7 +42,7 @@ public class Team_Service {
          * 1a. Confirm the <Creation> session has been initialized
          * 1b. Confirm it is still open
          * 2.  Create and save the new team
-         * 3.  Generate the default stats and save
+         * 3.  Generate the default result and save
          * 4.  Then return the response
          */
 
@@ -59,13 +61,12 @@ public class Team_Service {
                         configSession
                 ));
 
-        /* 3.  Generate the default stats and save */
-        Stats_Entity stats = statsRepository.save(
-                new Stats_Entity(
+        /* 3.  Generate the default result and save */
+        Result_Entity result = resultRepository.save(
+                new Result_Entity(
                         0, 0, 50,
                         configSession,
-                        team,
-                        new HashSet<>()
+                        team
                 )
         );
 
@@ -73,7 +74,7 @@ public class Team_Service {
         return new Team_Create_ResponseDTO(
                 team.getId(),
                 team.getTeamName(),
-                stats.getTeamRating(),
+                result.getTeamRating(),
                 team.getDateCreated()
         );
     }
@@ -81,17 +82,22 @@ public class Team_Service {
     @Transactional
     public Team_Play_ResponseDTO play(Team_Play_RequestDTO data) {
         /* STEPS:
-         * 1.   Confirm session is still open
+         * 1.   Confirm session is not <config>, exists and is still open
          * 2.   Fetch skill selections for this session
          * 3.   Confirm team exists, then Generate entropy and score using each compatible player
-         * 4.   Save new Stats containing entropy, teamScore, teamRatings, lastActiveSession, team and member players
+         * 4.   Save new result containing entropy, teamScore, teamRatings, lastActiveSession, team and member players
          * 5.   For each player, update skillRatings, append data to playerSummary list
          * 6.   Create and return the play response.
          */
 
-        /* 1a.  Confirm session is still open */
+        /* 1.  Confirm session is not <config>, exists and is still open */
         Session_Entity session = sessionRepository.findById(data.sessionId())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US, "Session with UUID='%s' not found!", data.sessionId())));
+        if (session.getSessionName().equalsIgnoreCase(GlobalUtil.configSessionName))
+            throw new PolicyException(
+                    HttpStatus.FORBIDDEN,
+                    "You can't use the config session to play!"
+            );
         Instant expiryDate = session.getDateCreated().plusSeconds(session.getTtl());
         if (Instant.now().isAfter(expiryDate))
             throw new SessionExpiredException("Session for this event expired at " + expiryDate);
@@ -99,7 +105,7 @@ public class Team_Service {
         /* 2.  Fetch skill selections for this session */
         List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(data.sessionId());
 
-        /* 3.   Confirm team exists, then Generate entropy and score using each compatible player */
+        /* 3a.   Confirm team exists, then Generate entropy and score using each compatible player */
         Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionById(data.teamId())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
                         "Team with UUID='%s' not found!", data.teamId())));
@@ -115,9 +121,11 @@ public class Team_Service {
                 .stream()
                 .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
 
+        /* accumulate result stats */
         Map<UUID, Map<Long, Integer>> playerMapOfRatingsMap = new HashMap<>();
         Map<UUID, Integer> oldRatingsSumMap = new HashMap<>();
         for (UUID playerId : data.playerIds()) {
+
             /* get player details from group */
             List<Player_Details_Projection> playerDetails = playerDetailsMap.get(playerId);
             if (playerDetails == null)
@@ -137,12 +145,14 @@ public class Team_Service {
             /* Reject play if player's average is above team's rating (i.e, not compatible) */
             int average = ratingsSum / playerDetails.size();
             if (average > oldTeamRating)
-                throw new RatingLimitException("""
+                throw new PolicyException(
+                        HttpStatus.FORBIDDEN, """
                         Player with ID '%s' has an average rating of %d that \
                         exceeds this team's rating of %d, hence play is rejected!"""
-                        .formatted(playerId, average, oldTeamRating));
+                        .formatted(playerId, average, oldTeamRating)
+                );
 
-            /* Aggregate for the selected skill using current stats */
+            /* Aggregate for the selected skill using current result */
             for (Long skillId : sessionSkillIds) {
                 n++;
                 aggregate += ratingsMap.getOrDefault(skillId, 0);
@@ -150,21 +160,17 @@ public class Team_Service {
 
         }
 
-        /* 4.   Save new Stats containing entropy, teamScore, teamRatings, lastActiveSession, team and member players */
+        /* 4.   Save new result containing entropy, teamScore, teamRatings, lastActiveSession, team and member players */
         teamScore = aggregate / n;
         final int newTeamRating = (oldTeamRating + teamScore) / 2;
-        Stats_Entity stats = statsRepository.save(
-                new Stats_Entity(
+        Result_Entity result = resultRepository.save(
+                new Result_Entity(
                         teamScore,
                         entropy,
                         newTeamRating,
                         session,
-                        teamRepository.getReferenceById(data.teamId()),
-                        data.playerIds().stream()
-                                .map(playerRepository::getReferenceById)
-                                .collect(Collectors.toSet())
-                )
-        );
+                        teamRepository.getReferenceById(data.teamId())
+                ));
 
         if (1 != teamRepository.updateActiveSession(data.teamId(), data.sessionId()))
             throw new PersistenceException("""
@@ -199,6 +205,7 @@ public class Team_Service {
                 );
             }
 
+            /* add the player summary */
             playerSummaries.add(
                     new Team_PlayerSummary_DTO(
                             playerDetails.getFirst().getUserName(),
@@ -206,17 +213,34 @@ public class Team_Service {
                             newPlayerRatingsSum / newRatingsCount
                     )
             );
+
+            /* insert relation to junction table (try-catch then rethrow) */
+            try {
+                junctionTeamSessionPlayerRepository.save(
+                        new Junction_Result_Session_Player(
+                                result,
+                                session,
+                                playerRepository.getReferenceById(playerId)
+                        ));
+            } catch (Exception e) {
+                throw new PolicyException(
+                        HttpStatus.FORBIDDEN, """
+                        Requested Player with (id = '%s', userName = '%s') \
+                        have already registered a result with another team for this session!"""
+                        .formatted(playerDetails.getFirst().getPlayerId(), playerDetails.getFirst().getUserName()));
+            }
+
         }
 
         /* 6.   Create and return the Play response. */
         return new Team_Play_ResponseDTO(
                 session.getSessionName(),
                 teamDetails.getTeamName(),
-                stats.getTeamScore(),
-                stats.getEntropy(),
+                result.getTeamScore(),
+                result.getEntropy(),
                 oldTeamRating,
-                stats.getTeamRating(),
-                stats.getDateCreated(),
+                result.getTeamRating(),
+                result.getDateCreated(),
                 playerSummaries
         );
     }

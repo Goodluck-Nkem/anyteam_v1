@@ -4,9 +4,9 @@ import lombok.Getter;
 import org.springframework.http.HttpStatusCode;
 
 @Getter
-public class ControllerException extends RuntimeException{
+public class PolicyException extends RuntimeException{
     private HttpStatusCode httpStatusCode;
-    public ControllerException(HttpStatusCode httpStatusCode, String message){
+    public PolicyException(HttpStatusCode httpStatusCode, String message){
         super(message);
         this.httpStatusCode = httpStatusCode;
     }

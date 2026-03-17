@@ -14,6 +14,7 @@ public class SysConfig_Mapper {
     ) {
         return new SysConfig_ResponseDTO(
                 configSession.getTtl(),
+                configSession.getDateCreated(),
                 skills
         );
     }

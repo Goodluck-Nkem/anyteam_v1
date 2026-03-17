@@ -71,10 +71,13 @@ public class Session_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "session")
-    private List<Stats_Entity> stats = new ArrayList<>();
+    private List<Result_Entity> results = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
     private List<SkillSelection_Entity> skillSelections = new ArrayList<>();
+
+    @OneToMany(mappedBy = "session")
+    private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
 
     
     /* ---- ++++++++++++++ ---- */

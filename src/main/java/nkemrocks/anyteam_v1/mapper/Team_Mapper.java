@@ -12,11 +12,7 @@ public class Team_Mapper {
                 teamDetails.getTeamId(),
                 teamDetails.getTeamName(),
                 teamDetails.getDateCreated(),
-                teamDetails.getTeamScore(),
-                teamDetails.getEntropy(),
-                teamDetails.getTeamRating(),
-                teamDetails.getSessionName(),
-                teamDetails.getDateSessionCreated()
+                teamDetails.getTeamRating()
         );
     }
 
