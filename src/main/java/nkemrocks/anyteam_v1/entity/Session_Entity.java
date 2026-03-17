@@ -79,6 +79,9 @@ public class Session_Entity {
     @OneToMany(mappedBy = "session")
     private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "lastActiveSession")
+    private List<Team_Entity> teams = new ArrayList<>();
+
     
     /* ---- ++++++++++++++ ---- */
     /* equals and hashcode */

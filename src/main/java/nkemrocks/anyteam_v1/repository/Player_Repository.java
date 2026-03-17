@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -67,6 +69,24 @@ public interface Player_Repository extends JpaRepository<Player_Entity, UUID> {
             ORDER BY p.userName ASC
             """)
     List<Player_Details_Projection> getDetailsProjectionByManyIds(List<UUID> playerIds);
+
+    @Query("""
+            SELECT  p.id AS playerId, p.userName AS userName,
+                    p.firstName AS firstName, p.lastName AS lastName,
+                    p.dateCreated AS dateCreated, p.dateUpdated AS dateUpdated,
+                    sk.id AS skillId, sk.skillName AS skillName,
+                    sr.skillRating AS skillRating
+            
+            FROM    SkillRating_Entity sr
+            
+            JOIN    sr.player p
+            JOIN    sr.skill sk
+            
+            WHERE   p.userName IN :userNames
+            
+            ORDER BY p.userName ASC
+            """)
+    List<Player_Details_Projection> getDetailsProjectionByManyNames(List<String> userNames);
 
     @Query("""
             SELECT p.id FROM Player_Entity p

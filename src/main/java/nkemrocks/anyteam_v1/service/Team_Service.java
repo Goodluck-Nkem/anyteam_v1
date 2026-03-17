@@ -91,8 +91,14 @@ public class Team_Service {
          */
 
         /* 1.  Confirm session is not <config>, exists and is still open */
-        Session_Entity session = sessionRepository.findById(data.sessionId())
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US, "Session with UUID='%s' not found!", data.sessionId())));
+        Session_Entity session = (data.sessionId() != null ?
+                sessionRepository.findById(data.sessionId()) :
+                sessionRepository.findBySessionName(data.sessionName()))
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
+                        "Session with UUID='%s' or name='%s' not found!",
+                        data.sessionId(),
+                        data.sessionId() == null ? data.sessionName() : "<IGNORED_WHEN_ID_PROVIDED>"
+                )));
         if (session.getSessionName().equalsIgnoreCase(GlobalUtil.configSessionName))
             throw new PolicyException(
                     HttpStatus.FORBIDDEN,
@@ -103,12 +109,17 @@ public class Team_Service {
             throw new SessionExpiredException("Session for this event expired at " + expiryDate);
 
         /* 2.  Fetch skill selections for this session */
-        List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(data.sessionId());
+        List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(session.getId());
 
         /* 3a.   Confirm team exists, then Generate entropy and score using each compatible player */
-        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionById(data.teamId())
+        Team_Details_Projection teamDetails = (data.teamId() != null ?
+                teamRepository.getDetailsProjectionById(data.teamId()) :
+                teamRepository.getDetailsProjectionByName(data.teamName()))
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
-                        "Team with UUID='%s' not found!", data.teamId())));
+                        "Team with UUID='%s' or name='%s' not found!",
+                        data.teamId(),
+                        data.teamId() == null ? data.teamName() : "<IGNORED_WHEN_ID_PROVIDED>"
+                )));
         int entropy = ThreadLocalRandom.current().nextInt(10, 101);
         int aggregate = entropy;
         int teamScore;
@@ -116,15 +127,17 @@ public class Team_Service {
         int n = 1;
 
         /* Fetch and group each player details */
-        Map<UUID, List<Player_Details_Projection>> playerDetailsMap = playerRepository
-                .getDetailsProjectionByManyIds(new ArrayList<>(data.playerIds()))
-                .stream()
-                .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
+        Map<UUID, List<Player_Details_Projection>> playerDetailsMap =
+                (data.playerIds() != null ?
+                        playerRepository.getDetailsProjectionByManyIds(new ArrayList<>(data.playerIds())) :
+                        playerRepository.getDetailsProjectionByManyNames(new ArrayList<>(data.userNames())))
+                        .stream()
+                        .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
 
         /* accumulate result stats */
         Map<UUID, Map<Long, Integer>> playerMapOfRatingsMap = new HashMap<>();
         Map<UUID, Integer> oldRatingsSumMap = new HashMap<>();
-        for (UUID playerId : data.playerIds()) {
+        for (UUID playerId : playerDetailsMap.keySet()) {
 
             /* get player details from group */
             List<Player_Details_Projection> playerDetails = playerDetailsMap.get(playerId);
@@ -169,17 +182,17 @@ public class Team_Service {
                         entropy,
                         newTeamRating,
                         session,
-                        teamRepository.getReferenceById(data.teamId())
+                        teamRepository.getReferenceById(teamDetails.getTeamId())
                 ));
 
-        if (1 != teamRepository.updateActiveSession(data.teamId(), data.sessionId()))
+        if (1 != teamRepository.updateActiveSession(teamDetails.getTeamId(), session.getId()))
             throw new PersistenceException("""
                     Team with ID '%s' couldn't update its last active session reference!"""
-                    .formatted(data.teamId()));
+                    .formatted(teamDetails.getTeamId()));
 
         /* 5.   For each player, update skillRatings, append data to playerSummary list */
         List<Team_PlayerSummary_DTO> playerSummaries = new ArrayList<>();
-        for (UUID playerId : data.playerIds()) {
+        for (UUID playerId : playerDetailsMap.keySet()) {
 
             List<Player_Details_Projection> playerDetails = playerDetailsMap.get(playerId);
             int oldPlayerRatingsSum = oldRatingsSumMap.get(playerId);

@@ -52,7 +52,7 @@ public class Team_Entity {
     private String teamName;
 
     @NonNull
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_active_session_id", nullable = false)
     private Session_Entity lastActiveSession;
 
