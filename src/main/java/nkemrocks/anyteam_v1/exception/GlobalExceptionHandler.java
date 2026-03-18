@@ -114,7 +114,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Error_DTO> messageNotReadableExceptionHandler(HttpMessageNotReadableException exception) {
         return new ResponseEntity<>(
-                new Error_DTO("You sent a malformed or invalid JSON request body that could not be parsed!"),
+                new Error_DTO("""
+                        Received a malformed or invalid JSON request body that could not be parsed! --- \
+                        Confirm your JSON, make sure syntax is correct, and that values are valid W.R.T the type. --- \
+                        Pass valid UUID strings for IDs, number for numbers, string for strings, etc. --- \
+                        In short, when you see this message, your JSON is the problem!"""),
                 HttpStatus.BAD_REQUEST /* 400 */
         );
     }

@@ -10,6 +10,7 @@ import nkemrocks.anyteam_v1.dto.team.response.Team_Play_ResponseDTO;
 import nkemrocks.anyteam_v1.exception.PolicyException;
 import nkemrocks.anyteam_v1.service.Result_Service;
 import nkemrocks.anyteam_v1.service.Team_Service;
+import nkemrocks.anyteam_v1.util.ValidationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class Team_Controller {
 
     @PostMapping("/play")
     public  ResponseEntity<Team_Play_ResponseDTO> play(@Valid @RequestBody Team_Play_RequestDTO data){
-        Team_Play_ResponseDTO response = teamService.play(data);
+        Team_Play_ResponseDTO response = teamService.play(ValidationUtil.validatePlayRequest(data));
         return ResponseEntity.ok(response);
     }
 

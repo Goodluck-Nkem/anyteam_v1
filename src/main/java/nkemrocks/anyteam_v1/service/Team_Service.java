@@ -134,6 +134,27 @@ public class Team_Service {
                         .stream()
                         .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
 
+        /* make sure each player exists */
+        if (data.playerIds() != null) {
+            for (UUID id : data.playerIds())
+                if (!playerDetailsMap.containsKey(id))
+                    throw new ResourceNotFoundException(String.format(Locale.US,
+                            "Player with UUID='%s' not found!", id));
+        } else {
+            for (String name : data.userNames()) {
+                boolean found = false;
+                for (UUID keyId : playerDetailsMap.keySet()) {
+                    if (playerDetailsMap.get(keyId).getFirst().getUserName().equals(name)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    throw new ResourceNotFoundException(String.format(Locale.US,
+                            "Player with username='%s' not found!", name));
+            }
+        }
+
         /* accumulate result stats */
         Map<UUID, Map<Long, Integer>> playerMapOfRatingsMap = new HashMap<>();
         Map<UUID, Integer> oldRatingsSumMap = new HashMap<>();
@@ -141,9 +162,6 @@ public class Team_Service {
 
             /* get player details from group */
             List<Player_Details_Projection> playerDetails = playerDetailsMap.get(playerId);
-            if (playerDetails == null)
-                throw new ResourceNotFoundException(String.format(Locale.US,
-                        "Player with UUID='%s' not found!", playerId));
 
             /* Map <skill,rating>, <player,average>, <player,ratingsMap> for quick lookup */
             Map<Long, Integer> ratingsMap = new HashMap<>();
@@ -209,13 +227,17 @@ public class Team_Service {
                 }
                 int skillRatingValue = (oldSkillValue + teamScore) / 2;
                 newPlayerRatingsSum += (skillRatingValue - oldSkillValue);
-                skillRatingRepository.save(
-                        new SkillRating_Entity(
+
+                /* select and update skill rating */
+                SkillRating_Entity skillRating = skillRatingRepository.findByPlayerIdAndSkillId(playerId, skillId)
+                        .orElse(new SkillRating_Entity(
                                 playerRepository.getReferenceById(playerId),
                                 skillRepository.getReferenceById(skillId),
                                 skillRatingValue
-                        )
-                );
+                        ));
+                skillRating.setSkillRating(skillRatingValue);
+                skillRatingRepository.save(skillRating);
+
             }
 
             /* add the player summary */

@@ -4,8 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.hibernate.validator.constraints.Length;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ public record Player_Create_RequestDTO(
         @Length(min = 2, max = 255, message = ERROR_FIRST_LAST_LENGTH)
         String lastName,
 
+        @JsonDeserialize(as = LinkedHashSet.class)
         @Size(max = 10, message = ERROR_SIZE_FOCUS_SET)
         Set<@NotBlank(message = ERROR_SKILL_NAME_BLANK) String> skillFocus
 
@@ -42,11 +44,11 @@ public record Player_Create_RequestDTO(
         firstName = trim(firstName);
         lastName = trim(lastName);
         skillFocus = skillFocus == null ?
-                new HashSet<>() :
+                new LinkedHashSet<>() :
                 skillFocus
                         .stream()
                         .map(GlobalUtil::trimAndLower)
-                        .collect(Collectors.toSet());
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 }

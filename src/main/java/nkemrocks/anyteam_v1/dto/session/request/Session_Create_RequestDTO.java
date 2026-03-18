@@ -5,7 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.hibernate.validator.constraints.Length;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,7 @@ public record Session_Create_RequestDTO(
         @NotNull(message = ERROR_NULL_TTL)
         Integer ttl,
 
+        @JsonDeserialize(as = LinkedHashSet.class)
         @NotNull(message = ERROR_NULL_REQUIREMENTS)
         @Size(min = 4, max = 4, message = ERROR_SIZE_REQUIREMENTS)
         Set<@NotBlank(message = ERROR_BLANK_ELEMENT) String> requirements
@@ -37,6 +40,6 @@ public record Session_Create_RequestDTO(
             requirements = requirements
                     .stream()
                     .map(GlobalUtil::trimAndLower)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
