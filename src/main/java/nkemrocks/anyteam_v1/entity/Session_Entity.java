@@ -64,7 +64,7 @@ public class Session_Entity {
     /** Time-To-Live in seconds */
     @NonNull
     @Column(nullable = false)
-    private Integer ttl;
+    private Long ttl;
     
 
     /* ---- ++++++++++++++ ---- */

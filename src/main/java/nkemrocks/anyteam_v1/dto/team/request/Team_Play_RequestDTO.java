@@ -7,8 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public record Team_Play_RequestDTO(
-        UUID teamId,
-        String teamName,
 
         UUID sessionId,
         String sessionName,

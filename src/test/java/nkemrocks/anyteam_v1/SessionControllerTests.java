@@ -32,7 +32,7 @@ public class SessionControllerTests {
     void initTestEnv(){
         sysConfigService.initConfigSession(
                 new SysConfig_RequestDTO(
-                        3600
+                        3600L
                 ));
     }
 

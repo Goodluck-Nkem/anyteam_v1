@@ -15,7 +15,8 @@ import java.util.UUID;
 public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
     
     @Query("""
-            SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
+            SELECT  t.id AS teamId, t.teamName AS teamName,
+                    t.dateCreated AS dateCreated, t.passwordHash AS passwordHash,
                     r.teamRating AS teamRating
             
             FROM    Result_Entity r
@@ -36,7 +37,8 @@ public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
     int updateActiveSession(UUID teamId, UUID sessionId);
 
     @Query("""
-            SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
+            SELECT  t.id AS teamId, t.teamName AS teamName,
+                    t.dateCreated AS dateCreated, t.passwordHash AS passwordHash,
                     r.teamRating AS teamRating
             
             FROM    Result_Entity r
@@ -49,7 +51,8 @@ public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
     Optional<Team_Details_Projection> getDetailsProjectionByName(String teamName);
 
     @Query("""
-            SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
+            SELECT  t.id AS teamId, t.teamName AS teamName,
+                    t.dateCreated AS dateCreated, t.passwordHash AS passwordHash,
                     r.teamRating AS teamRating
             
             FROM    Result_Entity r
@@ -64,7 +67,8 @@ public interface Team_Repository extends JpaRepository<Team_Entity, UUID> {
     List<Team_Details_Projection> getDetailsProjectionByNameContaining(String nameContent);
 
     @Query("""
-            SELECT  t.id AS teamId, t.teamName AS teamName, t.dateCreated AS dateCreated,
+            SELECT  t.id AS teamId, t.teamName AS teamName,
+                    t.dateCreated AS dateCreated, t.passwordHash AS passwordHash,
                     r.teamRating AS teamRating
             
             FROM    Result_Entity r

@@ -29,12 +29,10 @@ last_names = [
     "Ogbuehi", "Aniekwensi", "Balogun", "Adedeji", "Danjuma"
 ]
 
-# initialize system
-subprocess.run(f"./valid_sysconfig_init.sh {random.randint(10, 10000) * 100}", shell=True)
-print()
-
 
 for user_name in sys.argv[1:]:
+
+    print("\033[33m*** ---+S+--- ***\033[0m")
 
     # Random names
     first_name = random.choice(first_names)
@@ -46,6 +44,7 @@ for user_name in sys.argv[1:]:
 
     body = json.dumps({
         "userName": user_name,
+        "password": f"{user_name}_2026",
         "firstName": first_name,
         "lastName": last_name,
         "skillFocus": skill_focus
@@ -56,5 +55,6 @@ for user_name in sys.argv[1:]:
 -d '{body}'"""
 
     subprocess.run(cmd, shell=True)
-    print()
+
+    print("\033[33m\n*** ---+E+--- ***\n\033[0m")
 

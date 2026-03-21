@@ -7,6 +7,7 @@ public interface Team_Details_Projection {
 
     UUID getTeamId();
     String getTeamName();
+    String getPasswordHash();
     Instant getDateCreated();
 
     Integer getTeamRating();

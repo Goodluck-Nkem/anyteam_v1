@@ -1,12 +1,14 @@
 DATA=$(cat <<EOF
 { 
 	"ttl": -1, 
-	"sessionId": "$1"
+	"sessionId": "$2"
 }
 EOF
 )
 
-curl -X POST http://localhost:8080/api/v1/session/update \
+cookie_arg="-b $1"
+
+curl $cookie_arg -X POST http://localhost:8080/api/v1/session/update \
 	-H "Content-Type: application/json" \
 	-d "$DATA"
 echo ""

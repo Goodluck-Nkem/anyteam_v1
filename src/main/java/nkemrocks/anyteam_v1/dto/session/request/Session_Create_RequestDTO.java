@@ -19,7 +19,7 @@ public record Session_Create_RequestDTO(
         String sessionName,
 
         @NotNull(message = ERROR_NULL_TTL)
-        Integer ttl,
+        Long ttl,
 
         @JsonDeserialize(as = LinkedHashSet.class)
         @NotNull(message = ERROR_NULL_REQUIREMENTS)

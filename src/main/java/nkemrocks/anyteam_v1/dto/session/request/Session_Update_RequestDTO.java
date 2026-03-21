@@ -9,7 +9,7 @@ public record Session_Update_RequestDTO (
         UUID sessionId,
 
         @NotNull(message = ERROR_NULL_TTL)
-        Integer ttl
+        Long ttl
 ) {
     private static final String ERROR_NULL_SESSION = "Session ID must be provided!";
     private static final String ERROR_NULL_TTL = "Time-To-Live (ttl) field cannot be null!";

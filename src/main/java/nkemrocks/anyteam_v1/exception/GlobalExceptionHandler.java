@@ -1,7 +1,7 @@
 package nkemrocks.anyteam_v1.exception;
 
 import jakarta.persistence.EntityNotFoundException;
-import nkemrocks.anyteam_v1.dto.Error_DTO;
+import nkemrocks.anyteam_v1.dto.error.Error_DTO;
 import nkemrocks.anyteam_v1.util.ConstraintRelatedStrings;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;

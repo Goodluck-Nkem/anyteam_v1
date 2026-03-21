@@ -1,13 +1,17 @@
 DATA=$(cat <<EOF
-{ 
-	"playerId": "$1", 
+{  
 	"firstName": "$2",
 	"lastName": "$3"
 }
 EOF
 )
 
-curl -X POST http://localhost:8080/api/v1/player/update \
+if [ $# -eq 0 ]; then
+	echo "Cookie file not provided!"
+	exit 0
+fi
+
+curl -D - -b $1 -X POST http://localhost:8080/api/v1/player/update \
 	-H "Content-Type: application/json" \
 	-d "$DATA"
 echo ""

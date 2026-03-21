@@ -1,12 +1,15 @@
 package nkemrocks.anyteam_v1.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import nkemrocks.anyteam_v1.dto.login.Login_RequestDTO;
 import nkemrocks.anyteam_v1.dto.player.request.Player_Create_RequestDTO;
 import nkemrocks.anyteam_v1.dto.player.request.Player_Update_RequestDTO;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Create_ResponseDTO;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Fetch_ResponseDTO;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Update_ResponseDTO;
+import nkemrocks.anyteam_v1.exception.PolicyException;
 import nkemrocks.anyteam_v1.mapper.Player_Mapper;
 import nkemrocks.anyteam_v1.projection.Player_Details_Projection;
 import nkemrocks.anyteam_v1.entity.*;
@@ -14,7 +17,12 @@ import nkemrocks.anyteam_v1.exception.ResourceNotFoundException;
 import nkemrocks.anyteam_v1.exception.ServiceUnavailableException;
 import nkemrocks.anyteam_v1.exception.SessionExpiredException;
 import nkemrocks.anyteam_v1.repository.*;
+import nkemrocks.anyteam_v1.util.CookieUtil;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -29,6 +37,8 @@ public class Player_Service {
     private final Skill_Repository skillRepository;
     private final SkillRating_Repository skillRatingRepository;
     private final Session_Repository sessionRepository;
+    private final Jwt_Service jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Player_Create_ResponseDTO createPlayer(Player_Create_RequestDTO data) {
@@ -53,6 +63,7 @@ public class Player_Service {
         Player_Entity player = playerRepository.save(
                 new Player_Entity(
                         data.userName(),
+                        Objects.requireNonNull(passwordEncoder.encode(data.password())),
                         data.firstName(),
                         data.lastName()
                 ));
@@ -126,9 +137,20 @@ public class Player_Service {
      * update player by ID
      */
     public Player_Update_ResponseDTO updatePlayer(Player_Update_RequestDTO data) {
-        Player_Entity player = playerRepository.findById(data.playerId())
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
-                        "Player with UUID='%s' not found!", data.playerId())));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null)
+            throw new PolicyException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Security context failed for this player, try to re-login or refresh!"
+            );
+
+        Player_Entity player = playerRepository.findByUserName(auth.getName())
+                .orElseThrow(() -> new PolicyException(HttpStatus.UNAUTHORIZED, """
+                        Player with username '%s' not found!, try to re-login or refresh!"""
+                        .formatted(auth.getName())
+                ));
+
         player.setFirstName(data.firstName());
         player.setLastName(data.lastName());
         return playerMapper.toUpdate_ResponseDTO(playerRepository.save(player));
@@ -204,5 +226,24 @@ public class Player_Service {
                         detailsMap.getOrDefault(playerId, List.of())
                 ))
                 .toList();
+    }
+
+    public Player_Fetch_ResponseDTO loginPlayer(
+            Login_RequestDTO data,
+            HttpServletResponse httpServletResponse) {
+
+        List<Player_Details_Projection> playerDetails = playerRepository.getDetailsProjectionByName(data.uniqueName());
+        if (playerDetails.isEmpty())
+            throw new ResourceNotFoundException("""
+                    Player with username '%s' not found!"""
+                    .formatted(data.uniqueName()));
+
+        if (!passwordEncoder.matches(data.password(), playerDetails.getFirst().getPasswordHash()))
+            throw new PolicyException(HttpStatus.UNAUTHORIZED, "Invalid player credentials!");
+
+        String token = jwtService.generateToken(data.uniqueName(), "PLAYER");
+        CookieUtil.addJwtCookie(httpServletResponse, token);
+
+        return playerMapper.toFetch_ResponseDTO(playerDetails);
     }
 }

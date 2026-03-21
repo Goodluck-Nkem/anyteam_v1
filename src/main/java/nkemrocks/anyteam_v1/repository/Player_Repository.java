@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,8 +13,10 @@ import java.util.UUID;
 @Repository
 public interface Player_Repository extends JpaRepository<Player_Entity, UUID> {
 
+    Optional<Player_Entity> findByUserName(String userName);
+
     @Query("""
-            SELECT  p.id AS playerId, p.userName AS userName,
+            SELECT  p.id AS playerId, p.userName AS userName, p.passwordHash AS passwordHash,
                     p.firstName AS firstName, p.lastName AS lastName,
                     p.dateCreated AS dateCreated, p.dateUpdated AS dateUpdated,
                     sk.id AS skillId, sk.skillName AS skillName,
@@ -31,7 +32,7 @@ public interface Player_Repository extends JpaRepository<Player_Entity, UUID> {
     List<Player_Details_Projection> getDetailsProjectionById(UUID playerId);
 
     @Query("""
-            SELECT  p.id AS playerId, p.userName AS userName,
+            SELECT  p.id AS playerId, p.userName AS userName, p.passwordHash AS passwordHash,
                     p.firstName AS firstName, p.lastName AS lastName,
                     p.dateCreated AS dateCreated, p.dateUpdated AS dateUpdated,
                     sk.id AS skillId, sk.skillName AS skillName,
@@ -53,7 +54,7 @@ public interface Player_Repository extends JpaRepository<Player_Entity, UUID> {
     List<UUID> getIds_SearchByNameContaining(String nameContent);
 
     @Query("""
-            SELECT  p.id AS playerId, p.userName AS userName,
+            SELECT  p.id AS playerId, p.userName AS userName, p.passwordHash AS passwordHash,
                     p.firstName AS firstName, p.lastName AS lastName,
                     p.dateCreated AS dateCreated, p.dateUpdated AS dateUpdated,
                     sk.id AS skillId, sk.skillName AS skillName,
@@ -71,7 +72,7 @@ public interface Player_Repository extends JpaRepository<Player_Entity, UUID> {
     List<Player_Details_Projection> getDetailsProjectionByManyIds(List<UUID> playerIds);
 
     @Query("""
-            SELECT  p.id AS playerId, p.userName AS userName,
+            SELECT  p.id AS playerId, p.userName AS userName, p.passwordHash AS passwordHash,
                     p.firstName AS firstName, p.lastName AS lastName,
                     p.dateCreated AS dateCreated, p.dateUpdated AS dateUpdated,
                     sk.id AS skillId, sk.skillName AS skillName,

@@ -52,6 +52,10 @@ public class Team_Entity {
     private String teamName;
 
     @NonNull
+    @Column(nullable = false)
+    private String passwordHash;
+
+    @NonNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_active_session_id", nullable = false)
     private Session_Entity lastActiveSession;

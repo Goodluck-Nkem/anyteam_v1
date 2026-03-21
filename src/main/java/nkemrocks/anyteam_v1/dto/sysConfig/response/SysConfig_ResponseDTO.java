@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record SysConfig_ResponseDTO(
-        Integer ttl,
+        Long ttl,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
         Instant dateCreated,
         List<String> skills

@@ -31,7 +31,7 @@ public class SysConfigControllerTests {
     void testThat_SysConfigWillInitForValidInput() throws Exception {
         printCurrentTestMethodRef();
 
-        Integer ttl = 3600;
+        Long ttl = 3600L;
         String json = """
                 {
                     "ttl": %d
@@ -88,7 +88,7 @@ public class SysConfigControllerTests {
     void testThat_GetInfoWithValidSysConfigSucceeds() throws Exception {
         printCurrentTestMethodRef();
 
-        sysConfigService.initConfigSession(new SysConfig_RequestDTO(3600));
+        sysConfigService.initConfigSession(new SysConfig_RequestDTO(3600L));
 
         mockMvc.perform(get("/api/v1/sysconfig"))
                 .andDo(printResponseField("$.ttl"))

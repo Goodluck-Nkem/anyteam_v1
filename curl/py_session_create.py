@@ -8,11 +8,10 @@ import json
 skills = [ "art", "biology", "history", "language", "logic",
           "math", "music", "spelling", "sport", "technology" ]
 
-# initialize system
-subprocess.run(f"./valid_sysconfig_init.sh {random.randint(10, 10000) * 100}", shell=True)
-print()
 
 for session_name in sys.argv[1:]:
+
+    print("\033[33m*** ---+S+--- ***\033[0m")
 
     requirements = random.sample(skills, 4)
     ttl = random.randint(10, 1000) * 100
@@ -23,11 +22,13 @@ for session_name in sys.argv[1:]:
         "requirements": requirements
         })
 
-    cmd = f"""curl -X POST http://localhost:8080/api/v1/session/create \
+    cmd = f"""curl -b cookie/admin.txt -X POST http://localhost:8080/api/v1/session/create \
             -H "Content-Type: application/json" \
             -d '{body}'"""
 
+    #print(cmd)
+
     subprocess.run(cmd, shell=True)
 
-    print()
+    print("\033[33m\n*** ---+E+--- ***\n\033[0m")
 

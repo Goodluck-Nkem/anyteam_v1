@@ -6,12 +6,20 @@ import org.hibernate.validator.constraints.Length;
 import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
 
 public record Team_Create_RequestDTO(
+
         @NotBlank(message = ERROR_NAME_BLANK)
         @Length(min = 1, max = 255, message = ERROR_NAME_LENGTH)
-        String teamName
-) {
+        String teamName,
+
+        @NotBlank(message = ERROR_PASSWORD_BLANK)
+        @Length(min = 8, max = 255, message = ERROR_PASSWORD_LENGTH)
+        String password
+
+        ) {
     private static final String ERROR_NAME_BLANK = "Team name can't be blank!";
     private static final String ERROR_NAME_LENGTH = "Team name length must be inclusively between 1 and 255";
+    private static final String ERROR_PASSWORD_BLANK = "Password can't be blank!";
+    private static final String ERROR_PASSWORD_LENGTH = "Password length must be between 8 and 255 inclusive";
 
     /* setup certain fields before validation checks */
     public Team_Create_RequestDTO {

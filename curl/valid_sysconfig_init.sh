@@ -1,5 +1,5 @@
-TTL="$1"
-if [ "$#" -eq 0 ]; then
+TTL="$2"
+if [ "$#" -le 1 ]; then
 	TTL=0
 fi
 
@@ -10,7 +10,9 @@ DATA_TTL=$(cat <<EOF
 EOF
 )
 
-curl -X POST http://localhost:8080/api/v1/sysconfig \
+cookie_arg="-b $1"
+
+curl $cookie_arg -X POST http://localhost:8080/api/v1/sysconfig \
   -H "Content-Type: application/json" \
   -d "$DATA_TTL" 
 echo ""

@@ -1,7 +1,9 @@
 package nkemrocks.anyteam_v1.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import nkemrocks.anyteam_v1.dto.login.Login_RequestDTO;
 import nkemrocks.anyteam_v1.dto.team.request.Team_Create_RequestDTO;
 import nkemrocks.anyteam_v1.dto.team.request.Team_Play_RequestDTO;
 import nkemrocks.anyteam_v1.dto.team.response.Team_Create_ResponseDTO;
@@ -14,8 +16,12 @@ import nkemrocks.anyteam_v1.mapper.Team_Mapper;
 import nkemrocks.anyteam_v1.projection.Player_Details_Projection;
 import nkemrocks.anyteam_v1.projection.Team_Details_Projection;
 import nkemrocks.anyteam_v1.repository.*;
+import nkemrocks.anyteam_v1.util.CookieUtil;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -35,6 +41,8 @@ public class Team_Service {
     private final SkillRating_Repository skillRatingRepository;
     private final Skill_Repository skillRepository;
     private final Junction_Team_Session_Player_Repository junctionTeamSessionPlayerRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Jwt_Service jwtService;
 
     @Transactional
     public Team_Create_ResponseDTO createTeam(Team_Create_RequestDTO data) {
@@ -58,6 +66,7 @@ public class Team_Service {
         Team_Entity team = teamRepository.save(
                 new Team_Entity(
                         data.teamName(),
+                        Objects.requireNonNull(passwordEncoder.encode(data.password())),
                         configSession
                 ));
 
@@ -81,6 +90,14 @@ public class Team_Service {
 
     @Transactional
     public Team_Play_ResponseDTO play(Team_Play_RequestDTO data) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null)
+            throw new PolicyException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Security context failed for this team, try to re-login or refresh!"
+            );
+
         /* STEPS:
          * 1.   Confirm session is not <config>, exists and is still open
          * 2.   Fetch skill selections for this session
@@ -112,13 +129,10 @@ public class Team_Service {
         List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(session.getId());
 
         /* 3a.   Confirm team exists, then Generate entropy and score using each compatible player */
-        Team_Details_Projection teamDetails = (data.teamId() != null ?
-                teamRepository.getDetailsProjectionById(data.teamId()) :
-                teamRepository.getDetailsProjectionByName(data.teamName()))
+        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionByName(auth.getName())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
-                        "Team with UUID='%s' or name='%s' not found!",
-                        data.teamId(),
-                        data.teamId() == null ? data.teamName() : "<IGNORED_WHEN_ID_PROVIDED>"
+                        "Team with name='%s' not found, try to re-login or refresh!",
+                        auth.getName()
                 )));
         int entropy = ThreadLocalRandom.current().nextInt(10, 101);
         int aggregate = entropy;
@@ -316,4 +330,19 @@ public class Team_Service {
                 .toList();
     }
 
+    public Team_Fetch_ResponseDTO loginTeam(Login_RequestDTO data, HttpServletResponse httpServletResponse) {
+
+        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionByName(data.uniqueName())
+                .orElseThrow(()-> new ResourceNotFoundException("""
+                    Team with name '%s' not found!"""
+                        .formatted(data.uniqueName())));
+
+        if (!passwordEncoder.matches(data.password(), teamDetails.getPasswordHash()))
+            throw new PolicyException(HttpStatus.UNAUTHORIZED, "Invalid team credentials!");
+
+        String token = jwtService.generateToken(data.uniqueName(), "TEAM");
+        CookieUtil.addJwtCookie(httpServletResponse, token);
+
+        return teamMapper.toFetch_ResponseDTO(teamDetails);
+    }
 }

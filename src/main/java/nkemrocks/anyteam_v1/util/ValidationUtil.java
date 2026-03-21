@@ -14,16 +14,15 @@ public class ValidationUtil {
     
     public static Team_Play_RequestDTO validatePlayRequest(Team_Play_RequestDTO in){
 
-        final String ERROR_NULL_TEAM = "Either Team ID or Name must be provided, both cannot be null or blank!";
         final String ERROR_NULL_SESSION = "Either Session ID or Name must be provided, both cannot be null or blank!";
         final String ERROR_NULL_ENTRY_PLAYER_IDS = "No entry in the player ID list can be null when list is provided!";
         final String ERROR_BLANK_ENTRY_USERNAMES = "No entry in the fallback username list can be null or blank when list is provided!";
         final String ERROR_NULL_PLAYER_LIST = "Either player ID list or username list must be provided, both cannot be null!";
         final String ERROR_SIZE_PLAYER_LIST = "Number of players in a team must be inclusively between 2 and 5.";
 
-        UUID outTeamId = null, outSessionId = null;
+        UUID outSessionId = null;
         Set<UUID> outPlayerIds = null;
-        String outTeamName = null, outSessionName = null;
+        String outSessionName = null;
         Set<String> outUserNames = null;
 
         if(in.sessionId() == null){
@@ -32,13 +31,6 @@ public class ValidationUtil {
                 throw new PolicyException(HttpStatus.BAD_REQUEST, ERROR_NULL_SESSION);
         }
         else outSessionId = in.sessionId();
-
-        if(in.teamId() == null){
-            outTeamName = trimAndLower(in.teamName());
-            if(outTeamName == null || outTeamName.isBlank())
-                throw new PolicyException(HttpStatus.BAD_REQUEST, ERROR_NULL_TEAM);
-        }
-        else outTeamId = in.teamId();
 
         if(in.playerIds() != null){
             for(UUID id : in.playerIds())
@@ -65,8 +57,6 @@ public class ValidationUtil {
         }
 
         return new Team_Play_RequestDTO(
-                outTeamId,
-                outTeamName,
                 outSessionId,
                 outSessionName,
                 outPlayerIds,

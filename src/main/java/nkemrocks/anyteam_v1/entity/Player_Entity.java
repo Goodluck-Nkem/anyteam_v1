@@ -61,6 +61,10 @@ public class Player_Entity {
 
     @NonNull
     @Column(nullable = false)
+    private String passwordHash;
+
+    @NonNull
+    @Column(nullable = false)
     private String firstName;
 
     @NonNull

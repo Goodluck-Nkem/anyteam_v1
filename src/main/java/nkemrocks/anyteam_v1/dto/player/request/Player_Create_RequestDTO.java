@@ -15,15 +15,19 @@ import static nkemrocks.anyteam_v1.util.GlobalUtil.*;
 /* Matches the body of the player_create post request */
 public record Player_Create_RequestDTO(
 
-        @NotBlank(message = ERROR_NAME_BLANK)
+        @NotBlank(message = ERROR_USERNAME_BLANK)
         @Length(min = 1, max = 255, message = ERROR_PLAYER_LENGTH)
         String userName,
 
-        @NotBlank(message = ERROR_NAME_BLANK)
+        @NotBlank(message = ERROR_PASSWORD_BLANK)
+        @Length(min = 8, max = 255, message = ERROR_PASSWORD_LENGTH)
+        String password,
+
+        @NotBlank(message = ERROR_FIRST_LAST_NAME_BLANK)
         @Length(min = 2, max = 255, message = ERROR_FIRST_LAST_LENGTH)
         String firstName,
 
-        @NotBlank(message = ERROR_NAME_BLANK)
+        @NotBlank(message = ERROR_FIRST_LAST_NAME_BLANK)
         @Length(min = 2, max = 255, message = ERROR_FIRST_LAST_LENGTH)
         String lastName,
 
@@ -32,11 +36,14 @@ public record Player_Create_RequestDTO(
         Set<@NotBlank(message = ERROR_SKILL_NAME_BLANK) String> skillFocus
 
 ) {
-    private static final String ERROR_NAME_BLANK = "Name can't be blank!";
+    private static final String ERROR_FIRST_LAST_NAME_BLANK = "First/Last name can't be blank!";
     private static final String ERROR_FIRST_LAST_LENGTH = "First/Last name length must be between 2 and 255 inclusive";
     private static final String ERROR_PLAYER_LENGTH = "Player's user name length must be between 1 and 255 inclusive";
     private static final String ERROR_SIZE_FOCUS_SET = "Maximum of 10 skills to can't be exceeded!";
     private static final String ERROR_SKILL_NAME_BLANK = "Skill name can't be blank!";
+    private static final String ERROR_PASSWORD_BLANK = "Password can't be blank!";
+    private static final String ERROR_USERNAME_BLANK = "Player's username can't be blank!";
+    private static final String ERROR_PASSWORD_LENGTH = "Password length must be between 8 and 255 inclusive";
 
     /* setup certain fields before validation checks */
     public Player_Create_RequestDTO {
