@@ -1,16 +1,16 @@
-curl -D - -X POST http://localhost:8080/api/v1/sysconfig \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/sysconfig \
   -H "Content-Type: application/json" \
   -d '{ 
 	  	"ttl": null 
 	}'
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/sysconfig \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/sysconfig \
   -H "Content-Type: application/json" \
   -d '{}'
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/sysconfig \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/sysconfig \
   -H "Content-Type: application/json" \
   -d '{ 
 	  	"ttl": -1

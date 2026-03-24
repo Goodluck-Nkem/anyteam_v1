@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public interface Player_Details_Projection {
     UUID getPlayerId();
-    String getUserName();
+    String getPlayerName();
     String getPasswordHash();
     String getFirstName();
     String getLastName();

@@ -30,7 +30,7 @@ last_names = [
 ]
 
 
-for user_name in sys.argv[1:]:
+for player_name in sys.argv[1:]:
 
     print("\033[33m*** ---+S+--- ***\033[0m")
 
@@ -43,8 +43,8 @@ for user_name in sys.argv[1:]:
     skill_focus = random.sample(skills, k)
 
     body = json.dumps({
-        "userName": user_name,
-        "password": f"{user_name}_2026",
+        "playerName": player_name,
+        "password": f"{player_name}_2026",
         "firstName": first_name,
         "lastName": last_name,
         "skillFocus": skill_focus

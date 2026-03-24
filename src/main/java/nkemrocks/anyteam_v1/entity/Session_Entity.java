@@ -77,10 +77,7 @@ public class Session_Entity {
     private List<SkillSelection_Entity> skillSelections = new ArrayList<>();
 
     @OneToMany(mappedBy = "session")
-    private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "lastActiveSession")
-    private List<Team_Entity> teams = new ArrayList<>();
+    private List<Junction_Result_Session_Player> junctions = new ArrayList<>();
 
     
     /* ---- ++++++++++++++ ---- */

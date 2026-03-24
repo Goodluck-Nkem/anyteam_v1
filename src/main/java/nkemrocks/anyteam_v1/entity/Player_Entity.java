@@ -7,13 +7,13 @@ import lombok.*;
 import java.time.Instant;
 import java.util.*;
 
-import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__players__user_name;
+import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__players__player_name;
 
 @Entity
 @Table(name = "players", uniqueConstraints = {
         @UniqueConstraint(
-                name = UK__players__user_name,
-                columnNames = {"user_name"})
+                name = UK__players__player_name,
+                columnNames = {"player_name"})
 })
 @Getter
 @Setter
@@ -56,8 +56,8 @@ public class Player_Entity {
     /* required-set fields */
     /* ---- ++++++++++++++ ---- */
     @NonNull
-    @Column(name = "user_name", nullable = false)
-    private String userName;
+    @Column(name = "player_name", nullable = false)
+    private String playerName;
 
     @NonNull
     @Column(nullable = false)

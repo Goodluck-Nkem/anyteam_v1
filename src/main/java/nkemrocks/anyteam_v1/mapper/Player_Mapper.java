@@ -26,7 +26,7 @@ public class Player_Mapper {
         Player_Details_Projection first = playerDetails.getFirst();
         return new Player_Fetch_ResponseDTO(
                 first.getPlayerId(),
-                first.getUserName(),
+                first.getPlayerName(),
                 first.getFirstName(),
                 first.getLastName(),
                 first.getDateCreated(),
@@ -39,7 +39,7 @@ public class Player_Mapper {
     public Player_Update_ResponseDTO toUpdate_ResponseDTO(Player_Entity player) {
         return new Player_Update_ResponseDTO(
                 player.getId(),
-                player.getUserName(),
+                player.getPlayerName(),
                 player.getFirstName(),
                 player.getLastName(),
                 player.getDateCreated(),

@@ -1,19 +1,18 @@
 package nkemrocks.anyteam_v1.mapper;
 
 import nkemrocks.anyteam_v1.dto.team.response.Team_Fetch_ResponseDTO;
-import nkemrocks.anyteam_v1.projection.Team_Details_Projection;
+import nkemrocks.anyteam_v1.entity.Team_Entity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class Team_Mapper {
 
-    public Team_Fetch_ResponseDTO toFetch_ResponseDTO(Team_Details_Projection teamDetails) {
+    public Team_Fetch_ResponseDTO toFetch_ResponseDTO(Team_Entity team) {
         return new Team_Fetch_ResponseDTO(
-                teamDetails.getTeamId(),
-                teamDetails.getTeamName(),
-                teamDetails.getDateCreated(),
-                teamDetails.getTeamRating()
+                team.getId(),
+                team.getTeamName(),
+                team.getRating(),
+                team.getDateCreated()
         );
     }
-
 }

@@ -46,15 +46,11 @@ public class Result_Entity {
     /* ---- ++++++++++++++ ---- */
     @NonNull
     @Column(nullable = false, updatable = false)
-    private Integer teamScore;
+    private Integer score;
 
     @NonNull
     @Column(nullable = false, updatable = false)
     private Integer entropy;
-
-    @NonNull
-    @Column(nullable = false, updatable = false)
-    private Integer teamRating;
 
     @NonNull
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,7 +67,7 @@ public class Result_Entity {
     /* default-set fields */
     /* ---- ++++++++++++++ ---- */
     @OneToMany(mappedBy = "result")
-    private List<Junction_Result_Session_Player> junctionList = new ArrayList<>();
+    private List<Junction_Result_Session_Player> junctions = new ArrayList<>();
 
 
     /* ---- ++++++++++++++ ---- */

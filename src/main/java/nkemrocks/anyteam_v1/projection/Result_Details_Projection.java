@@ -5,7 +5,7 @@ import java.time.Instant;
 public interface Result_Details_Projection {
 
     Long getResultId();
-    Integer getTeamScore();
+    Integer getScore();
     Integer getEntropy();
     Instant getDateResultCreated();
 
@@ -13,6 +13,6 @@ public interface Result_Details_Projection {
 
     String getTeamName();
 
-    String getUserName();
+    String getPlayerName();
 
 }

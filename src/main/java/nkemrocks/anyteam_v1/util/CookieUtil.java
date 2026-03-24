@@ -21,6 +21,7 @@ public class CookieUtil {
                 .httpOnly(true)
                 .path("/")
                 .maxAge(0)
+                .sameSite("Strict")
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", cookie.toString());

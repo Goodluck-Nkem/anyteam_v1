@@ -19,6 +19,9 @@ import nkemrocks.anyteam_v1.exception.SessionExpiredException;
 import nkemrocks.anyteam_v1.repository.*;
 import nkemrocks.anyteam_v1.util.CookieUtil;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,7 +65,7 @@ public class Player_Service {
         /* 2. Create and save the new player */
         Player_Entity player = playerRepository.save(
                 new Player_Entity(
-                        data.userName(),
+                        data.playerName(),
                         Objects.requireNonNull(passwordEncoder.encode(data.password())),
                         data.firstName(),
                         data.lastName()
@@ -124,7 +127,7 @@ public class Player_Service {
         /* 4. return the player entity */
         return new Player_Create_ResponseDTO(
                 player.getId(),
-                player.getUserName(),
+                player.getPlayerName(),
                 player.getFirstName(),
                 player.getLastName(),
                 player.getDateCreated(),
@@ -145,9 +148,9 @@ public class Player_Service {
                     "Security context failed for this player, try to re-login or refresh!"
             );
 
-        Player_Entity player = playerRepository.findByUserName(auth.getName())
+        Player_Entity player = playerRepository.findByPlayerName(auth.getName())
                 .orElseThrow(() -> new PolicyException(HttpStatus.UNAUTHORIZED, """
-                        Player with username '%s' not found!, try to re-login or refresh!"""
+                        Player with playerName '%s' not found!, try to re-login or refresh!"""
                         .formatted(auth.getName())
                 ));
 
@@ -170,62 +173,71 @@ public class Player_Service {
     /**
      * find exact player by name (UI should have no reason to use this, should instead use ID for speed)
      */
-    public Player_Fetch_ResponseDTO findPlayer(String userName) {
-        List<Player_Details_Projection> playerDetails = playerRepository.getDetailsProjectionByName(userName);
+    public Player_Fetch_ResponseDTO findPlayer(String playerName) {
+        List<Player_Details_Projection> playerDetails = playerRepository.getDetailsProjectionByName(playerName);
         if (playerDetails.isEmpty())
             throw new ResourceNotFoundException(String.format(Locale.US,
-                    "Player name: '%s' not found!", userName));
+                    "Player name: '%s' not found!", playerName));
         return playerMapper.toFetch_ResponseDTO(playerDetails);
+    }
+
+    private Slice<Player_Fetch_ResponseDTO> getPlayerResponseSlice(
+            Slice<UUID> playerIdsSlice,
+            Pageable pageable
+    ){
+        /* get slice content */
+        List<UUID> playerIds = playerIdsSlice.getContent();
+        if(playerIds.isEmpty())
+            return new SliceImpl<>(List.of(), pageable, false);
+
+        /* Get details */
+        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(
+                playerIds
+        );
+
+        /* group by ID */
+        Map<UUID, List<Player_Details_Projection>> detailsMap = playersDetails.stream()
+                .collect(Collectors.groupingBy(
+                        Player_Details_Projection::getPlayerId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        /* return response slice */
+        return new SliceImpl<>(
+                playerIds.stream()
+                        .map(playerId -> playerMapper.toFetch_ResponseDTO(
+                                detailsMap.get(playerId)
+                        ))
+                        .toList(),
+                pageable,
+                playerIdsSlice.hasNext()
+        );
     }
 
     /**
      * search players with name like this, also with pagination (default 10)
      */
-    public List<Player_Fetch_ResponseDTO> searchForPlayers(String nameContent) {
-        /* Get all searched players details */
-        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(
-                playerRepository.getIds_SearchByNameContaining(nameContent)
+    public Slice<Player_Fetch_ResponseDTO> searchForPlayers(
+            String nameContent,
+            Pageable pageable
+    ) {
+        /* return response slice */
+        return getPlayerResponseSlice(
+                playerRepository.getIds_SearchByNameContaining(nameContent, pageable),
+                pageable
         );
-
-        /* group by ID (maintain stream order) */
-        Map<UUID, List<Player_Details_Projection>> detailsMap = playersDetails.stream()
-                .collect(Collectors.groupingBy(
-                        Player_Details_Projection::getPlayerId,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
-
-        /* return response list */
-        return detailsMap.keySet().stream()
-                .map(playerId -> playerMapper.toFetch_ResponseDTO(
-                        detailsMap.getOrDefault(playerId, List.of())
-                ))
-                .toList();
     }
 
     /**
-     * List all players
+     * Fetch a slice of all players
      */
-    public List<Player_Fetch_ResponseDTO> listAllPlayers() {
-        /* Get all player details */
-        List<Player_Details_Projection> playersDetails = playerRepository.getDetailsProjectionByManyIds(
-                playerRepository.getIds_findAll()
+    public Slice<Player_Fetch_ResponseDTO> listAllPlayers(Pageable pageable) {
+        /* return response slice */
+        return getPlayerResponseSlice(
+                playerRepository.getIds_findAll(pageable),
+                pageable
         );
-
-        /* group by ID (maintain stream order) */
-        Map<UUID, List<Player_Details_Projection>> detailsMap = playersDetails.stream()
-                .collect(Collectors.groupingBy(
-                        Player_Details_Projection::getPlayerId,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
-
-        /* return response list */
-        return detailsMap.keySet().stream()
-                .map(playerId -> playerMapper.toFetch_ResponseDTO(
-                        detailsMap.getOrDefault(playerId, List.of())
-                ))
-                .toList();
     }
 
     public Player_Fetch_ResponseDTO loginPlayer(
@@ -235,7 +247,7 @@ public class Player_Service {
         List<Player_Details_Projection> playerDetails = playerRepository.getDetailsProjectionByName(data.uniqueName());
         if (playerDetails.isEmpty())
             throw new ResourceNotFoundException("""
-                    Player with username '%s' not found!"""
+                    Player with playerName '%s' not found!"""
                     .formatted(data.uniqueName()));
 
         if (!passwordEncoder.matches(data.password(), playerDetails.getFirst().getPasswordHash()))

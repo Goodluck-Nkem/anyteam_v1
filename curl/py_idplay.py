@@ -26,5 +26,5 @@ cmd = f"""curl -D - {cookie_arg} -X POST http://localhost:8080/api/v1/team/play 
 
 subprocess.run(cmd, shell=True)
 
-print(f"\n{body}\n")
+print()
 

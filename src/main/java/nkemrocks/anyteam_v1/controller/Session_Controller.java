@@ -6,20 +6,28 @@ import nkemrocks.anyteam_v1.dto.session.request.*;
 import nkemrocks.anyteam_v1.dto.session.response.*;
 import nkemrocks.anyteam_v1.exception.PolicyException;
 import nkemrocks.anyteam_v1.service.Session_Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
+import static nkemrocks.anyteam_v1.util.ValidationUtil.validatePageableSort;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/session")
 public class Session_Controller {
     private final Session_Service sessionService;
+
+    private static final Map<String, String> sortFieldsMap = Map.of(
+            "session", "sessionName",
+            "date", "id"
+    );
 
     @PostMapping("/create")
     public ResponseEntity<Session_Create_ResponseDTO> create(@Valid @RequestBody Session_Create_RequestDTO data) {
@@ -50,16 +58,22 @@ public class Session_Controller {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Session_Fetch_ResponseDTO>> search(
-            @RequestParam String q
+    public ResponseEntity<Slice<Session_Fetch_ResponseDTO>> search(
+            @RequestParam String q,
+            Pageable pageable
     ) {
-        List<Session_Fetch_ResponseDTO> response = sessionService.searchForSessions(q.toLowerCase());
+        Slice<Session_Fetch_ResponseDTO> response = sessionService.searchForSessions(
+                q.toLowerCase(),
+                validatePageableSort(pageable, sortFieldsMap)
+        );
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Session_Fetch_ResponseDTO>> list() {
-        List<Session_Fetch_ResponseDTO> response = sessionService.listAllSessions();
+    public ResponseEntity<Slice<Session_Fetch_ResponseDTO>> list(Pageable pageable) {
+        Slice<Session_Fetch_ResponseDTO> response = sessionService.listAllSessions(
+                validatePageableSort(pageable, sortFieldsMap)
+        );
         return ResponseEntity.ok(response);
     }
 }

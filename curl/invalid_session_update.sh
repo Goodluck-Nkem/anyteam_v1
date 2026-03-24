@@ -6,7 +6,7 @@ DATA=$(cat <<EOF
 EOF
 )
 
-curl -D - -X POST http://localhost:8080/api/v1/session/update \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/update \
 	-H "Content-Type: application/json" \
 	-d "$DATA"
 echo ""

@@ -28,6 +28,20 @@ public class SecurityConfig {
             JwtFilter jwtFilter) throws RuntimeException {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exConfig -> exConfig
+                        .authenticationEntryPoint((req, res, e)->{
+                            res.setStatus(401);
+                            res.setContentType("application/json");
+                            res.getWriter().write("""
+                                    { "error" : "Unauthorized, Invalid or missing token!" }""");
+                        })
+                        .accessDeniedHandler((req, res, e)->{
+                            res.setStatus(403);
+                            res.setContentType("application/json");
+                            res.getWriter().write("""
+                                    { "error" : "Forbidden, access denied!" }""");
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/**",

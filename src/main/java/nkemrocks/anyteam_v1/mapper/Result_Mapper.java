@@ -12,17 +12,17 @@ public class Result_Mapper {
     public Team_Result_ResponseDTO toTeamResult_ResponseDTO(
             List<Result_Details_Projection> resultDetails
     ) {
-        List<String> userNames = resultDetails.stream()
-                .map(Result_Details_Projection::getUserName)
+        List<String> playerNames = resultDetails.stream()
+                .map(Result_Details_Projection::getPlayerName)
                 .toList();
 
         Result_Details_Projection first = resultDetails.getFirst();
         return new Team_Result_ResponseDTO(
                 first.getSessionName(),
                 first.getTeamName(),
-                userNames,
+                playerNames,
                 first.getDateResultCreated(),
-                first.getTeamScore(),
+                first.getScore(),
                 first.getEntropy()
         );
     }
@@ -31,9 +31,9 @@ public class Result_Mapper {
         return new Player_Result_ResponseDTO(
                 detail.getSessionName(),
                 detail.getTeamName(),
-                detail.getUserName(),
+                detail.getPlayerName(),
                 detail.getDateResultCreated(),
-                detail.getTeamScore(),
+                detail.getScore(),
                 detail.getEntropy()
         );
     }

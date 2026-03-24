@@ -8,14 +8,17 @@ import nkemrocks.anyteam_v1.exception.PolicyException;
 import nkemrocks.anyteam_v1.service.Player_Service;
 import jakarta.validation.Valid;
 import nkemrocks.anyteam_v1.service.Result_Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
+import static nkemrocks.anyteam_v1.util.ValidationUtil.validatePageableSort;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +26,20 @@ import static nkemrocks.anyteam_v1.util.GlobalUtil.trimAndLower;
 public class Player_Controller {
     private final Player_Service playerService;
     private final Result_Service resultService;
+
+    private static final Map<String, String> playerSortFieldsMap = Map.of(
+            "player", "playerName",
+            "date", "id"
+    );
+
+    private static final Map<String, String> resultSortFieldsMap = Map.of(
+            "score", "result.score",
+            "entropy", "result.entropy",
+            "date", "result.id",
+            "team", "result.team.teamName",
+            "session", "session.sessionName",
+            "player", "player.playerName"
+    );
 
     @PostMapping("/create")
     public ResponseEntity<Player_Create_ResponseDTO> create(@Valid @RequestBody Player_Create_RequestDTO data) {
@@ -37,20 +54,44 @@ public class Player_Controller {
     }
 
     @GetMapping("/results")
-    public ResponseEntity<List<Player_Result_ResponseDTO>> results(
+    public ResponseEntity<Slice<Player_Result_ResponseDTO>> results(
             @RequestParam(required = false) UUID playerId,
-            @RequestParam(required = false) UUID sessionId
+            @RequestParam(required = false) UUID sessionId,
+            @RequestParam(required = false) String playerName,
+            @RequestParam(required = false) String sessionName,
+            @RequestParam(required = false) String by,
+            Pageable pageable
     ) {
-        List<Player_Result_ResponseDTO> response;
+        by = trimAndLower(by);
+        playerName = trimAndLower(playerName);
+        sessionName = trimAndLower(sessionName);
+        if (by == null || (!by.equals("id") && !by.equals("name")))
+            throw new PolicyException(
+                    HttpStatus.BAD_REQUEST, """
+                    You must indicate how to find the results either via ID(recommended) or name. --- \
+                    For example, /results?by=id, /results?by=id&playerId='123', \
+                    /results?by=name, /results?by=name&sessionName=fall2026, etc"""
+            );
+        Slice<Player_Result_ResponseDTO> response;
+        pageable = validatePageableSort(pageable, resultSortFieldsMap);
 
-        if (playerId != null && sessionId != null)
-            response = resultService.getResults_OnePlayerSessionPair(playerId, sessionId);
-        else if (playerId != null)
-            response = resultService.getResults_OnePlayerAllSessions(playerId);
-        else if (sessionId != null)
-            response = resultService.getResults_AllPlayersOneSession(sessionId);
+        if ((playerId != null || playerName != null) && (sessionId != null || sessionName != null))
+            response = by.equals("id") ?
+                    resultService.getResults_OnePlayerSessionPair(playerId, sessionId, pageable) :
+                    resultService.getResults_OnePlayerSessionPair(playerName, sessionName, pageable);
+
+        else if (playerId != null || playerName != null)
+            response = by.equals("id") ?
+                    resultService.getResults_OnePlayerAllSessions(playerId, pageable) :
+                    resultService.getResults_OnePlayerAllSessions(playerName, pageable);
+
+        else if (sessionId != null || sessionName != null)
+            response = by.equals("id") ?
+                    resultService.getResults_AllPlayersOneSession(sessionId, pageable) :
+                    resultService.getResults_AllPlayersOneSession(sessionName, pageable);
+
         else
-            response = resultService.getResults_AllPlayersAllSessions();
+            response = resultService.getResults_AllPlayersAllSessions(pageable);
 
         return ResponseEntity.ok(response);
     }
@@ -73,19 +114,22 @@ public class Player_Controller {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Player_Fetch_ResponseDTO>> search(
-            @RequestParam String q
+    public ResponseEntity<Slice<Player_Fetch_ResponseDTO>> search(
+            @RequestParam String q,
+            Pageable pageable
     ) {
-        List<Player_Fetch_ResponseDTO> response = playerService.searchForPlayers(q.toLowerCase());
+        Slice<Player_Fetch_ResponseDTO> response = playerService.searchForPlayers(
+                q.toLowerCase(), validatePageableSort(pageable, playerSortFieldsMap));
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Lists all created players in the database
+     * Lists a slice of all created players in the database
      */
     @GetMapping("/list")
-    public ResponseEntity<List<Player_Fetch_ResponseDTO>> list() {
-        List<Player_Fetch_ResponseDTO> response = playerService.listAllPlayers();
+    public ResponseEntity<Slice<Player_Fetch_ResponseDTO>> list(Pageable pageable) {
+        Slice<Player_Fetch_ResponseDTO> response = playerService.listAllPlayers(
+                validatePageableSort(pageable, playerSortFieldsMap));
         return ResponseEntity.ok(response);
     }
 }

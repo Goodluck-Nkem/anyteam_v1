@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record Player_Create_ResponseDTO(
         UUID playerId,
-        String userName,
+        String playerName,
         String firstName,
         String lastName,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")

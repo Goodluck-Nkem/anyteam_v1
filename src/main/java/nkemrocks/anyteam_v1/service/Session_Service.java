@@ -19,6 +19,9 @@ import nkemrocks.anyteam_v1.repository.Session_Repository;
 import nkemrocks.anyteam_v1.repository.SkillSelection_Repository;
 import nkemrocks.anyteam_v1.repository.Skill_Repository;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -111,13 +114,21 @@ public class Session_Service {
         return sessionMapper.toFetch_ResponseDTO(sessionDetails);
     }
 
-    public List<Session_Fetch_ResponseDTO> searchForSessions(String nameContent) {
-        /* Get all search session details */
+    private Slice<Session_Fetch_ResponseDTO> getSessionResponseSlice(
+            Slice<UUID> sessionIdsSlice,
+            Pageable pageable
+    ) {
+        /* get slice content */
+        List<UUID> sessionIds = sessionIdsSlice.getContent();
+        if (sessionIds.isEmpty())
+            return new SliceImpl<>(List.of(), pageable, false);
+
+        /* Get requested search session details */
         List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(
-                sessionRepository.getIds_SearchByNameContaining(nameContent)
+                sessionIds
         );
 
-        /* group by ID (maintaining stream order) */
+        /* group by session ID */
         Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
                 .collect(Collectors.groupingBy(
                         Session_Details_Projection::getSessionId,
@@ -125,33 +136,38 @@ public class Session_Service {
                         Collectors.toList()
                 ));
 
-        /* return response list */
-        return detailsMap.keySet().stream()
-                .map(sessionId -> sessionMapper.toFetch_ResponseDTO(
-                        detailsMap.getOrDefault(sessionId, List.of())
-                ))
-                .toList();
+        /* build requested response list */
+        List<Session_Fetch_ResponseDTO> responseList = new ArrayList<>();
+        for (UUID sessionId : sessionIds) {
+            List<Session_Details_Projection> details = detailsMap.get(sessionId);
+            if (details != null)
+                responseList.add(sessionMapper.toFetch_ResponseDTO(details));
+        }
+
+        /* return response slice */
+        return new SliceImpl<>(
+                responseList,
+                pageable,
+                sessionIdsSlice.hasNext()
+        );
     }
 
-    public List<Session_Fetch_ResponseDTO> listAllSessions() {
-        /* Get all session details */
-        List<Session_Details_Projection> sessionsDetails = sessionRepository.getDetailsProjectionByManyIds(
-                sessionRepository.getIds_findAll()
+    public Slice<Session_Fetch_ResponseDTO> searchForSessions(
+            String nameContent,
+            Pageable pageable
+    ) {
+        /* return response slice */
+        return getSessionResponseSlice(
+                sessionRepository.getIds_SearchByNameContaining(nameContent, pageable),
+                pageable
         );
+    }
 
-        /* group by ID (maintaining stream order) */
-        Map<UUID, List<Session_Details_Projection>> detailsMap = sessionsDetails.stream()
-                .collect(Collectors.groupingBy(
-                        Session_Details_Projection::getSessionId,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
-
-        /* return response list */
-        return detailsMap.keySet().stream()
-                .map(sessionId -> sessionMapper.toFetch_ResponseDTO(
-                        detailsMap.getOrDefault(sessionId, List.of())
-                ))
-                .toList();
+    public Slice<Session_Fetch_ResponseDTO> listAllSessions(Pageable pageable) {
+        /* return response slice */
+        return getSessionResponseSlice(
+                sessionRepository.getIds_findAll(pageable),
+                pageable
+        );
     }
 }

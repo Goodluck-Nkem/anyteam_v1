@@ -35,27 +35,27 @@ DATA_REQ_NULL_ELEMENT=$(cat <<EOF
 EOF
 )
 
-curl -D - -X POST http://localhost:8080/api/v1/session/create \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
 	-d "$DATA_REQ_OUT_OF_RANGE"
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/session/create \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
 	-d "$DATA_TTL_NAN"
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/session/create \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
 	-d "$DATA_REQ_FAKE"
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/session/create \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
 	-d "$DATA_REQ_NULL_ELEMENT"
 echo ""
 
-curl -D - -X POST http://localhost:8080/api/v1/session/create \
+curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: text/plain" \
 	-d "$DATA_REQ_FAKE"
 echo ""

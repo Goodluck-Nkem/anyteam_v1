@@ -9,7 +9,7 @@ public record Team_Result_ResponseDTO(
 
         String sessionName,
         String teamName,
-        List<String> userNames,
+        List<String> playerNames,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
         Instant dateResultCreated,
         int score,

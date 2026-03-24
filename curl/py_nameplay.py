@@ -17,7 +17,7 @@ player_names = args[2:] if len(args) >= 3 else None
 
 body = json.dumps({
     "sessionName": session_name,
-    "userNames": player_names
+    "playerNames": player_names
     })
 
 cmd = f"""curl -D - {cookie_arg} -X POST http://localhost:8080/api/v1/team/play \
@@ -27,5 +27,6 @@ cmd = f"""curl -D - {cookie_arg} -X POST http://localhost:8080/api/v1/team/play 
 subprocess.run(cmd, shell=True)
 
 #print(f"\n{body}\n")
+print()
 
 

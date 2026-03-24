@@ -8,9 +8,8 @@ import java.util.UUID;
 public record Team_Fetch_ResponseDTO(
         UUID teamId,
         String teamName,
+        Integer teamRating,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm:ss", timezone = "UTC")
-        Instant dateCreated,
-
-        int teamRating
+        Instant dateCreated
 ) {
 }

@@ -14,6 +14,6 @@ public record Team_Play_RequestDTO(
         @JsonDeserialize(as = LinkedHashSet.class)
         Set<UUID> playerIds,
         @JsonDeserialize(as = LinkedHashSet.class)
-        Set<String> userNames
+        Set<String> playerNames
 ) {
 }

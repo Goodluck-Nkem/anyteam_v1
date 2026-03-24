@@ -3,6 +3,7 @@ package nkemrocks.anyteam_v1.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import nkemrocks.anyteam_v1.dto.status.BasicMessage_DTO;
 import nkemrocks.anyteam_v1.dto.login.Login_RequestDTO;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Fetch_ResponseDTO;
 import nkemrocks.anyteam_v1.dto.sysConfig.response.SysConfig_ResponseDTO;
@@ -47,13 +48,14 @@ public class Auth_Controller {
     public ResponseEntity<Team_Fetch_ResponseDTO> loginTeam(
             @Valid @RequestBody Login_RequestDTO data,
             HttpServletResponse httpServletResponse
-    ){
+    ) {
         Team_Fetch_ResponseDTO response = teamService.loginTeam(data, httpServletResponse);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
-    public void logoutCommonImpl(HttpServletResponse httpServletResponse){
+    public ResponseEntity<BasicMessage_DTO> logoutCommonImpl(HttpServletResponse httpServletResponse) {
         CookieUtil.clearCookie(httpServletResponse);
+        return ResponseEntity.ok(new BasicMessage_DTO("Logged out successfully!"));
     }
 }

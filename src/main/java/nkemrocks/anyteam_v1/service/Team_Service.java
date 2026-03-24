@@ -14,10 +14,12 @@ import nkemrocks.anyteam_v1.entity.*;
 import nkemrocks.anyteam_v1.exception.*;
 import nkemrocks.anyteam_v1.mapper.Team_Mapper;
 import nkemrocks.anyteam_v1.projection.Player_Details_Projection;
-import nkemrocks.anyteam_v1.projection.Team_Details_Projection;
 import nkemrocks.anyteam_v1.repository.*;
 import nkemrocks.anyteam_v1.util.CookieUtil;
 import nkemrocks.anyteam_v1.util.GlobalUtil;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,12 +48,12 @@ public class Team_Service {
 
     @Transactional
     public Team_Create_ResponseDTO createTeam(Team_Create_RequestDTO data) {
+
         /* STEPS:
          * 1a. Confirm the <Creation> session has been initialized
          * 1b. Confirm it is still open
          * 2.  Create and save the new team
-         * 3.  Generate the default result and save
-         * 4.  Then return the response
+         * 3.  Then return the response
          */
 
         /* 1a. Confirm the <config> session has been initialized */
@@ -67,23 +69,14 @@ public class Team_Service {
                 new Team_Entity(
                         data.teamName(),
                         Objects.requireNonNull(passwordEncoder.encode(data.password())),
-                        configSession
+                        50
                 ));
 
-        /* 3.  Generate the default result and save */
-        Result_Entity result = resultRepository.save(
-                new Result_Entity(
-                        0, 0, 50,
-                        configSession,
-                        team
-                )
-        );
-
-        /* 4.  Then return the response */
+        /* 3.  Then return the response */
         return new Team_Create_ResponseDTO(
                 team.getId(),
                 team.getTeamName(),
-                result.getTeamRating(),
+                team.getRating(),
                 team.getDateCreated()
         );
     }
@@ -102,7 +95,7 @@ public class Team_Service {
          * 1.   Confirm session is not <config>, exists and is still open
          * 2.   Fetch skill selections for this session
          * 3.   Confirm team exists, then Generate entropy and score using each compatible player
-         * 4.   Save new result containing entropy, teamScore, teamRatings, lastActiveSession, team and member players
+         * 4.   Save new result and update team rating
          * 5.   For each player, update skillRatings, append data to playerSummary list
          * 6.   Create and return the play response.
          */
@@ -129,22 +122,21 @@ public class Team_Service {
         List<Long> sessionSkillIds = skillSelectionRepository.getSkillIds(session.getId());
 
         /* 3a.   Confirm team exists, then Generate entropy and score using each compatible player */
-        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionByName(auth.getName())
+        Team_Entity team = teamRepository.findByTeamName(auth.getName())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
                         "Team with name='%s' not found, try to re-login or refresh!",
                         auth.getName()
                 )));
-        int entropy = ThreadLocalRandom.current().nextInt(10, 101);
+        int entropy = ThreadLocalRandom.current().nextInt(20, 101);
         int aggregate = entropy;
-        int teamScore;
-        final int oldTeamRating = teamDetails.getTeamRating();
+        final int oldTeamRating = team.getRating();
         int n = 1;
 
         /* Fetch and group each player details */
         Map<UUID, List<Player_Details_Projection>> playerDetailsMap =
                 (data.playerIds() != null ?
                         playerRepository.getDetailsProjectionByManyIds(new ArrayList<>(data.playerIds())) :
-                        playerRepository.getDetailsProjectionByManyNames(new ArrayList<>(data.userNames())))
+                        playerRepository.getDetailsProjectionByManyNames(new ArrayList<>(data.playerNames())))
                         .stream()
                         .collect(Collectors.groupingBy(Player_Details_Projection::getPlayerId));
 
@@ -155,17 +147,17 @@ public class Team_Service {
                     throw new ResourceNotFoundException(String.format(Locale.US,
                             "Player with UUID='%s' not found!", id));
         } else {
-            for (String name : data.userNames()) {
+            for (String name : data.playerNames()) {
                 boolean found = false;
                 for (UUID keyId : playerDetailsMap.keySet()) {
-                    if (playerDetailsMap.get(keyId).getFirst().getUserName().equals(name)) {
+                    if (playerDetailsMap.get(keyId).getFirst().getPlayerName().equals(name)) {
                         found = true;
                         break;
                     }
                 }
                 if (!found)
                     throw new ResourceNotFoundException(String.format(Locale.US,
-                            "Player with username='%s' not found!", name));
+                            "Player with playerName='%s' not found!", name));
             }
         }
 
@@ -192,10 +184,14 @@ public class Team_Service {
             if (average > oldTeamRating)
                 throw new PolicyException(
                         HttpStatus.FORBIDDEN, """
-                        Player with ID '%s' has an average rating of %d that \
-                        exceeds this team's rating of %d, hence play is rejected!"""
-                        .formatted(playerId, average, oldTeamRating)
-                );
+                        Player with (playerId = '%s', playerName = '%s') has an average \
+                        rating of %d that exceeds team's rating of %d, hence play is rejected!"""
+                        .formatted(
+                                playerId,
+                                playerDetails.getFirst().getPlayerName(),
+                                average,
+                                oldTeamRating
+                        ));
 
             /* Aggregate for the selected skill using current result */
             for (Long skillId : sessionSkillIds) {
@@ -205,22 +201,21 @@ public class Team_Service {
 
         }
 
-        /* 4.   Save new result containing entropy, teamScore, teamRatings, lastActiveSession, team and member players */
-        teamScore = aggregate / n;
-        final int newTeamRating = (oldTeamRating + teamScore) / 2;
+        /* 4.   Save new result and update team rating */
+        final int score = aggregate / n;
+        final int newTeamRating = (oldTeamRating + score) / 2;
         Result_Entity result = resultRepository.save(
                 new Result_Entity(
-                        teamScore,
+                        score,
                         entropy,
-                        newTeamRating,
                         session,
-                        teamRepository.getReferenceById(teamDetails.getTeamId())
+                        team
                 ));
 
-        if (1 != teamRepository.updateActiveSession(teamDetails.getTeamId(), session.getId()))
+        if (1 != teamRepository.updateTeamRating(team.getId(), newTeamRating))
             throw new PersistenceException("""
-                    Team with ID '%s' couldn't update its last active session reference!"""
-                    .formatted(teamDetails.getTeamId()));
+                    Team with ID '%s' couldn't update its rating!"""
+                    .formatted(team.getId()));
 
         /* 5.   For each player, update skillRatings, append data to playerSummary list */
         List<Team_PlayerSummary_DTO> playerSummaries = new ArrayList<>();
@@ -239,7 +234,7 @@ public class Team_Service {
                     oldSkillValue = 0;
                     newRatingsCount++;
                 }
-                int skillRatingValue = (oldSkillValue + teamScore) / 2;
+                int skillRatingValue = (oldSkillValue + score) / 2;
                 newPlayerRatingsSum += (skillRatingValue - oldSkillValue);
 
                 /* select and update skill rating */
@@ -257,7 +252,7 @@ public class Team_Service {
             /* add the player summary */
             playerSummaries.add(
                     new Team_PlayerSummary_DTO(
-                            playerDetails.getFirst().getUserName(),
+                            playerDetails.getFirst().getPlayerName(),
                             oldPlayerRatingsSum / oldRatingsCount,
                             newPlayerRatingsSum / newRatingsCount
                     )
@@ -274,9 +269,12 @@ public class Team_Service {
             } catch (Exception e) {
                 throw new PolicyException(
                         HttpStatus.FORBIDDEN, """
-                        Requested Player with (id = '%s', userName = '%s') \
+                        Requested Player with (playerId = '%s', playerName = '%s') \
                         have already registered a result with another team for this session!"""
-                        .formatted(playerDetails.getFirst().getPlayerId(), playerDetails.getFirst().getUserName()));
+                        .formatted(
+                                playerDetails.getFirst().getPlayerId(),
+                                playerDetails.getFirst().getPlayerName()
+                        ));
             }
 
         }
@@ -284,65 +282,73 @@ public class Team_Service {
         /* 6.   Create and return the Play response. */
         return new Team_Play_ResponseDTO(
                 session.getSessionName(),
-                teamDetails.getTeamName(),
-                result.getTeamScore(),
+                team.getTeamName(),
+                result.getScore(),
                 result.getEntropy(),
                 oldTeamRating,
-                result.getTeamRating(),
+                newTeamRating,
                 result.getDateCreated(),
                 playerSummaries
         );
     }
 
     public Team_Fetch_ResponseDTO findTeam(UUID teamId) {
-        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionById(teamId)
+        Team_Entity team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
                         "Team with UUID='%s' not found!", teamId)));
-        return teamMapper.toFetch_ResponseDTO(teamDetails);
+        return teamMapper.toFetch_ResponseDTO(team);
     }
 
     public Team_Fetch_ResponseDTO findTeam(String teamName) {
-        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionByName(teamName)
+        Team_Entity team = teamRepository.findByTeamName(teamName)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(Locale.US,
                         "Team name: '%s' not found!", teamName)));
-        return teamMapper.toFetch_ResponseDTO(teamDetails);
+        return teamMapper.toFetch_ResponseDTO(team);
     }
 
 
-    public List<Team_Fetch_ResponseDTO> searchForTeams(String nameContent) {
-        /* Get all searched team details */
-        List<Team_Details_Projection> teamsDetails =
-                teamRepository.getDetailsProjectionByNameContaining(nameContent);
+    public Slice<Team_Fetch_ResponseDTO> searchForTeams(String nameContent, Pageable pageable) {
+        /* Get a slice of all matched teams */
+        Slice<Team_Entity> teams =
+                teamRepository.findByTeamNameContaining(nameContent, pageable);
 
         /* return response list */
-        return teamsDetails.stream()
-                .map(teamMapper::toFetch_ResponseDTO)
-                .toList();
+        return new SliceImpl<>(
+                teams.stream()
+                        .map(teamMapper::toFetch_ResponseDTO)
+                        .toList(),
+                pageable,
+                teams.hasNext()
+        );
     }
 
-    public List<Team_Fetch_ResponseDTO> listAllTeams() {
-        /* Get all teams details */
-        List<Team_Details_Projection> teamsDetails = teamRepository.getAllDetailsProjection();
+    public Slice<Team_Fetch_ResponseDTO> listAllTeams(Pageable pageable) {
+        /* Get a slice of all teams */
+        Slice<Team_Entity> teams = teamRepository.findAllTeams(pageable);
 
         /* return response list */
-        return teamsDetails.stream()
-                .map(teamMapper::toFetch_ResponseDTO)
-                .toList();
+        return new SliceImpl<>(
+                teams.stream()
+                        .map(teamMapper::toFetch_ResponseDTO)
+                        .toList(),
+                pageable,
+                teams.hasNext()
+        );
     }
 
     public Team_Fetch_ResponseDTO loginTeam(Login_RequestDTO data, HttpServletResponse httpServletResponse) {
 
-        Team_Details_Projection teamDetails = teamRepository.getDetailsProjectionByName(data.uniqueName())
-                .orElseThrow(()-> new ResourceNotFoundException("""
-                    Team with name '%s' not found!"""
+        Team_Entity team = teamRepository.findByTeamName(data.uniqueName())
+                .orElseThrow(() -> new ResourceNotFoundException("""
+                        Team with name '%s' not found!"""
                         .formatted(data.uniqueName())));
 
-        if (!passwordEncoder.matches(data.password(), teamDetails.getPasswordHash()))
+        if (!passwordEncoder.matches(data.password(), team.getPasswordHash()))
             throw new PolicyException(HttpStatus.UNAUTHORIZED, "Invalid team credentials!");
 
         String token = jwtService.generateToken(data.uniqueName(), "TEAM");
         CookieUtil.addJwtCookie(httpServletResponse, token);
 
-        return teamMapper.toFetch_ResponseDTO(teamDetails);
+        return teamMapper.toFetch_ResponseDTO(team);
     }
 }

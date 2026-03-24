@@ -2,6 +2,8 @@ package nkemrocks.anyteam_v1.repository;
 
 import nkemrocks.anyteam_v1.entity.Session_Entity;
 import nkemrocks.anyteam_v1.projection.Session_Details_Projection;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,15 +17,18 @@ public interface Session_Repository extends JpaRepository<Session_Entity, UUID> 
     Optional<Session_Entity> findBySessionName(String name);
 
     @Query("""
-            SELECT s.id FROM Session_Entity s
+            SELECT s.id
+            
+            FROM Session_Entity s
+            
+            WHERE s.sessionName LIKE CONCAT('%', :nameContent, '%')
             """)
-    List<UUID> getIds_findAll();
+    Slice<UUID> getIds_SearchByNameContaining(String nameContent, Pageable pageable);
 
     @Query("""
             SELECT s.id FROM Session_Entity s
-            WHERE s.sessionName LIKE CONCAT('%', :nameContent, '%')
             """)
-    List<UUID> getIds_SearchByNameContaining(String nameContent);
+    Slice<UUID> getIds_findAll(Pageable pageable);
 
     @Query("""
             SELECT  s.id AS sessionId, s.sessionName AS sessionName,
@@ -64,8 +69,6 @@ public interface Session_Repository extends JpaRepository<Session_Entity, UUID> 
             JOIN    ss.skill sk
             
             WHERE   s.id IN :sessionIds
-            
-            ORDER BY s.sessionName ASC
             """)
     List<Session_Details_Projection> getDetailsProjectionByManyIds(List<UUID> sessionIds);
 
