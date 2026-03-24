@@ -4,12 +4,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
+
+    /* 12hrs */
+    public static final long TOKEN_AGE_SECONDS = 12 * 3600;
+
     public static void addJwtCookie(HttpServletResponse httpServletResponse, String token){
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
-                .maxAge(24 * 3600)
+                .maxAge(TOKEN_AGE_SECONDS)
                 .sameSite("Strict")
                 .build();
 

@@ -19,6 +19,7 @@ cmd = f"""curl -D - -c {sys.argv[1]} -X POST http://localhost:8080/api/v1/auth/a
             -H "Content-Type: application/json" \
             -d '{body}'"""
 
+print(cmd)
 subprocess.run(cmd, shell=True)
 
 print(f"\033[32m\nCookie in {sys.argv[1]}\n\033[0m")

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+import static nkemrocks.anyteam_v1.util.CookieUtil.TOKEN_AGE_SECONDS;
+
 @Service
 public class Jwt_Service {
 
@@ -16,7 +18,7 @@ public class Jwt_Service {
                 .setSubject(uniqueName)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + (24 * 3600 * 1000)))
+                .setExpiration(new Date(System.currentTimeMillis() + (TOKEN_AGE_SECONDS * 1000)))
                 .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()))
                 .compact();
     }
