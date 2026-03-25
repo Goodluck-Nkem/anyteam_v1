@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.Objects;
 
 import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skill_ratings__player_id__skill_id;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.BATCH_SIZE;
 
 @Entity
 @Table(name = "skill_ratings",
@@ -21,7 +22,12 @@ import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skill_ratin
 public class SkillRating_Entity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "skill_ratings_seq_gen")
+    @SequenceGenerator(
+            name = "skill_ratings_seq_gen",
+            sequenceName = "skill_ratings_seq",
+            allocationSize = BATCH_SIZE
+    )
     @Column(updatable = false, nullable = false)
     Long id;
 

@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.Objects;
 
 import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__junction_result_session_player__player_id__session_id;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.BATCH_SIZE;
 
 @Entity
 @Table(name = "junction_result_session_player", uniqueConstraints = {
@@ -19,7 +20,15 @@ import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__junction_re
 public class Junction_Result_Session_Player {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "junction_result_session_player__sequence_generator"
+    )
+    @SequenceGenerator(
+            name = "junction_result_session_player__sequence_generator",
+            sequenceName = "junc_res_sess_players_seq",
+            allocationSize = BATCH_SIZE
+    )
     @Column(updatable = false, nullable = false)
     Long id;
 

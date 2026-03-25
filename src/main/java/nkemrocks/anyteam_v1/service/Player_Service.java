@@ -78,17 +78,31 @@ public class Player_Service {
          * 1b.  Fetch skills map
          * 1c.  Make sure focus set exists
          * 2a.  Share the allocated points
-         * 2b.  Noting that 400pts is assigned for allocation.
+         * 2b.  Noting that a predefined total points is assigned for allocation.
          * 2c.  The focus set will take pts W.R.T size
-         * -.    1[100], 2[95], 3[90], 4[80], 5[70], 6[60], 7[50], 8[45], 9,10,0[40]
          */
 
         /* 1a.  Init focus fields */
-        final int[] map = {40, 100, 95, 90, 80, 70, 60, 50, 45, 40};
-        final int focusSize = data.skillFocus().size() >= 10 ? 0 : data.skillFocus().size();
-        final int eachFocus = map[focusSize];
-        int remnant = 400 - (eachFocus * focusSize);
-        final int ceil = (int) Math.ceil((float) remnant / (10 - focusSize));
+        final int TOTAL = 500;
+        final int MAX_COUNT = 10;
+        final int MIN_RATING = 20;
+
+        int focusRating, focusCount = data.skillFocus().size();
+        if (focusCount == 0) {
+            focusRating = 0;
+        } else if (focusCount == MAX_COUNT) {
+            focusRating = TOTAL / MAX_COUNT;
+        } else {
+            focusRating = Integer.min(
+                    80,
+                    (TOTAL - (MIN_RATING * (MAX_COUNT - focusCount))) / focusCount
+            );
+        }
+
+        int remnant = TOTAL - (focusRating * focusCount);
+        final int ceil = focusCount == MAX_COUNT ?
+                0 :
+                (int) Math.ceil((float) remnant / (MAX_COUNT - focusCount));
 
         /* 1b.  Fetch skills map */
         Map<String, Skill_Entity> skillsMap = skillRepository.findAll()
@@ -111,7 +125,7 @@ public class Player_Service {
         int aggregate = 0;
         for (Skill_Entity skill : skillsMap.values()) {
             int value = data.skillFocus().contains(skill.getSkillName()) ?
-                    eachFocus :
+                    focusRating :
                     ((remnant -= ceil) < 0 ? remnant + ceil : ceil);
             playerSkillRatings.add(
                     new SkillRating_Entity(
@@ -184,10 +198,10 @@ public class Player_Service {
     private Slice<Player_Fetch_ResponseDTO> getPlayerResponseSlice(
             Slice<UUID> playerIdsSlice,
             Pageable pageable
-    ){
+    ) {
         /* get slice content */
         List<UUID> playerIds = playerIdsSlice.getContent();
-        if(playerIds.isEmpty())
+        if (playerIds.isEmpty())
             return new SliceImpl<>(List.of(), pageable, false);
 
         /* Get details */

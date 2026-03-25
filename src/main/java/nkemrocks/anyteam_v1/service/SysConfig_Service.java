@@ -1,5 +1,6 @@
 package nkemrocks.anyteam_v1.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class SysConfig_Service {
     private final Session_Repository sessionRepository;
     private final Skill_Repository skillRepository;
     private final Jwt_Service jwtService;
+    private final EntityManager entityManager;
 
     public static final String[] initialSkillsArray = {
             ART,
@@ -74,7 +76,10 @@ public class SysConfig_Service {
             for (String skillName : initialSkillsArray) {
                 skills.add(new Skill_Entity(skillName));
             }
+
+            /* comment out one of them */
             skillRepository.saveAll(skills);
+            //entityManagerPersistBatch(skills, entityManager);
         } else {
             /* 3.  If Yes, just update session's ttl */
             configSession.setTtl(data.ttl());
@@ -118,4 +123,5 @@ public class SysConfig_Service {
         }
         throw new PolicyException(HttpStatus.UNAUTHORIZED, "Invalid admin credentials!");
     }
+
 }

@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.*;
 
 import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__results__team_id__session_id;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.BATCH_SIZE;
 
 @Entity
 @Table(name = "results", uniqueConstraints = {
@@ -21,7 +22,12 @@ import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__results__te
 public class Result_Entity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "results_seq_gen")
+    @SequenceGenerator(
+            name = "results_seq_gen",
+            sequenceName = "results_seq",
+            allocationSize = BATCH_SIZE
+    )
     @Column(updatable = false, nullable = false)
     Long id;
 

@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.Objects;
 
 import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skill_selections__session_id__skill_id;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.BATCH_SIZE;
 
 @Entity
 @Table(name = "skill_selections", uniqueConstraints = {
@@ -18,9 +19,14 @@ import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skill_selec
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 public class SkillSelection_Entity {
-
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "skillsel_seq_gen")
+    @SequenceGenerator(
+            name = "skillsel_seq_gen",
+            sequenceName = "skillsel_seq",
+            allocationSize = BATCH_SIZE
+    )
     @Column(updatable = false, nullable = false)
     Long id;
 

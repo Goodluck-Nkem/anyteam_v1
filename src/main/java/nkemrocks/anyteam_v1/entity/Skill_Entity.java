@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skills__skill_name;
+import static nkemrocks.anyteam_v1.util.GlobalUtil.BATCH_SIZE;
 
 
 @Entity
@@ -22,7 +23,12 @@ import static nkemrocks.anyteam_v1.util.ConstraintRelatedStrings.UK__skills__ski
 public class Skill_Entity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "skills_seq_gen")
+    @SequenceGenerator(
+            name = "skills_seq_gen",
+            sequenceName = "skills_seq",
+            allocationSize = BATCH_SIZE
+    )
     @Column(updatable = false, nullable = false)
     Long id;
 

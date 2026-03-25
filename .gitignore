@@ -39,4 +39,6 @@ postgres_volume_data
 
 pom.xml.save
 
+db_logfile
+
 data

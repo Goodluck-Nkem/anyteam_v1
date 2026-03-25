@@ -69,7 +69,7 @@ public class Team_Service {
                 new Team_Entity(
                         data.teamName(),
                         Objects.requireNonNull(passwordEncoder.encode(data.password())),
-                        50
+                        60
                 ));
 
         /* 3.  Then return the response */
@@ -202,8 +202,8 @@ public class Team_Service {
         }
 
         /* 4.   Save new result and update team rating */
-        final int score = aggregate / n;
-        final int newTeamRating = (oldTeamRating + score) / 2;
+        final int score = Math.ceilDiv(aggregate, n);
+        final int newTeamRating = Math.round((oldTeamRating + score) / 2.0f);
         Result_Entity result = resultRepository.save(
                 new Result_Entity(
                         score,
@@ -234,7 +234,7 @@ public class Team_Service {
                     oldSkillValue = 0;
                     newRatingsCount++;
                 }
-                int skillRatingValue = (oldSkillValue + score) / 2;
+                int skillRatingValue = Math.round((oldSkillValue + score) / 2.0f);
                 newPlayerRatingsSum += (skillRatingValue - oldSkillValue);
 
                 /* select and update skill rating */
