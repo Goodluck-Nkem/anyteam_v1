@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Form Page</title>
+  <style>
+    body {
+      background-color: hsl(0, 42%, 35%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    body>div {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      height: 50px;
+      background-color: aquamarine;
+      margin: 5px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .input_label {
+      background-color: hsl(0, 21%, 40%);
+      font-family: "Arial Black";
+      font-size: 20px;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      margin-left: 5px;
+      padding: 5px;
+      border-radius: 2px;
+      width: 25%;
+      height: 85%;
+    }
+
+    .input_field {
+      font-size: 20px;
+      margin-left: 5px;
+      margin-right: 5px;
+      padding-left: 2%;
+      padding-right: 2%;
+      width: 75%;
+      height: 85%;
+    }
+
+    #form_response {
+      text-align: center;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    #submit_button {
+      width: 125px;
+      height: 40px;
+      border-width: 1px;
+      border-radius: 5px;
+      background-color: rgb(166, 202, 65);
+      align-self: flex-end;
+      margin: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <label id="email_label" class="input_label" for="email_input"><b>E-mail: </b></label>
+    <input type="email" id="email_input" class="input_field" placeholder="(Enter E-mail) ">
+  </div>
+  <div>
+    <label id="age_label" class="input_label" for="age_input"><b>Age: </b></label>
+    <input type="number" id="age_input" min="15" max="75" step="1" class="input_field" placeholder="(15 - 75) ">
+  </div>
+  <button id="submit_button" class=""><b>SUBMIT</b></button>
+  <p id="form_response">NONE YET!</p>
+  <script>
+    document.getElementById("submit_button").addEventListener("click", async () => {
+      const email = document.getElementById("email_input").value;
+      const age = document.getElementById("age_input").value;
+      try {
+        const res = await fetch("/api/find", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({email})
+        });
+        console.log(JSON.stringify({email}));
+        const obj = await res.json();
+        document.getElementById("form_response").innerHTML = `${email}, age ${age}, got ${obj.last_name}, ${obj["first_name"]}`;
+      }
+      catch (error) { document.getElementById("form_response").innerHTML = `${error} : No Response!`; }
+    });
+  </script>
+</body>
+
+</html>

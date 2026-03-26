@@ -37,26 +37,31 @@ EOF
 
 curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
+	-H "X-XSRF-TOKEN: $(grep XSRF-TOKEN cookie/admin.txt | awk '{printf $7}')" \
 	-d "$DATA_REQ_OUT_OF_RANGE"
 echo ""
 
 curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
+	-H "X-XSRF-TOKEN: $(grep XSRF-TOKEN cookie/admin.txt | awk '{printf $7}')" \
 	-d "$DATA_TTL_NAN"
 echo ""
 
 curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
+	-H "X-XSRF-TOKEN: $(grep XSRF-TOKEN cookie/admin.txt | awk '{printf $7}')" \
 	-d "$DATA_REQ_FAKE"
 echo ""
 
 curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: application/json" \
+	-H "X-XSRF-TOKEN: $(grep XSRF-TOKEN cookie/admin.txt | awk '{printf $7}')" \
 	-d "$DATA_REQ_NULL_ELEMENT"
 echo ""
 
 curl -b cookie/admin.txt -D - -X POST http://localhost:8080/api/v1/session/create \
 	-H "Content-Type: text/plain" \
+	-H "X-XSRF-TOKEN: $(grep XSRF-TOKEN cookie/admin.txt | awk '{printf $7}')" \
 	-d "$DATA_REQ_FAKE"
 echo ""
 

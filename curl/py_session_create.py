@@ -9,6 +9,12 @@ skills = [ "art", "biology", "history", "language", "logic",
           "math", "music", "spelling", "sport", "technology" ]
 
 
+cmd = f"grep XSRF-TOKEN cookie/admin.txt" + " | awk '{print $7}'"
+csrf = subprocess.check_output(cmd, shell=True, text=True).strip()
+print(csrf)
+
+
+print()
 for session_name in sys.argv[1:]:
 
     print("\033[33m*** ---+S+--- ***\033[0m")
@@ -24,6 +30,7 @@ for session_name in sys.argv[1:]:
 
     cmd = f"""curl -b cookie/admin.txt -X POST http://localhost:8080/api/v1/session/create \
             -H "Content-Type: application/json" \
+            -H "X-XSRF-TOKEN: {csrf}" \
             -d '{body}'"""
 
     #print(cmd)

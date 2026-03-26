@@ -1,0 +1,13 @@
+/* styles specific to the "about" page */
+
+.about.image-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    padding: 1px 4px;
+}
+
+.about.image-wrapper img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+}

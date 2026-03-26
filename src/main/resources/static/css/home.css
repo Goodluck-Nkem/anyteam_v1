@@ -1,0 +1,9 @@
+/* styles specific to the "home" page */
+
+/* Row layout for buttons or find input+button */
+.home.row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}

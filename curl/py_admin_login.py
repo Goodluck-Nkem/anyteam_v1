@@ -5,7 +5,6 @@ import random
 import sys
 import json
 
-
 if len(sys.argv) < 4:
     print("Cookie file, Unique Name and Password must be provided!")
     sys.exit(0)
@@ -15,7 +14,9 @@ body = json.dumps({
         "password": sys.argv[3]
         })
 
-cmd = f"""curl -D - -c {sys.argv[1]} -X POST http://localhost:8080/api/v1/auth/admin/login \
+cmd = f"grep XSRF-TOKEN {sys.argv[1]}" + " | awk '{print $7}'"
+csrf = subprocess.check_output(cmd, shell=True, text=True).strip()
+cmd = f"""curl -D - -c {sys.argv[1]}  -X POST http://localhost:8080/api/v1/auth/admin/login \
             -H "Content-Type: application/json" \
             -d '{body}'"""
 
