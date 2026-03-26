@@ -2,7 +2,7 @@
 >Anyteam is a simulated team gameplay of player skills.
 
 #### system config
-The system a has a number of skills and system TTL configuration.
+The system has a TTL configuration and a number of skills.
 
 The config TTL allows a timeframe for creating new players, teams and gameplay sessions.
 
@@ -52,5 +52,5 @@ Every team must have a unique teamName and a password.
 
 > <b><i>new team rating</i></b> = Rounded nearest AVG = Round((old + score) / 2)
 
-> <b><i>player average rating</i></b> = Rounded nearest AVG([all player skills])
+> <b><i>player average rating</i></b> = Rounded down AVG([all player skills])
 
