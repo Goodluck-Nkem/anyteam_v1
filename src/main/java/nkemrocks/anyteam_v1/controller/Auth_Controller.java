@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nkemrocks.anyteam_v1.dto.status.BasicMessage_DTO;
 import nkemrocks.anyteam_v1.dto.login.Login_RequestDTO;
 import nkemrocks.anyteam_v1.dto.player.response.Player_Fetch_ResponseDTO;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
@@ -40,7 +42,7 @@ public class Auth_Controller {
             HttpServletResponse httpServletResponse) {
         CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         if (csrfToken != null)
-            System.out.println("CSRF: " + csrfToken.getToken());
+            log.info("CSRF<admin>: {}", csrfToken.getToken());
         SysConfig_ResponseDTO response = sysConfigService.loginAdmin(data, httpServletResponse);
         return ResponseEntity.ok(response);
     }
@@ -53,7 +55,7 @@ public class Auth_Controller {
     ) {
         CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         if (csrfToken != null)
-            System.out.println("CSRF: " + csrfToken.getToken());
+            log.info("CSRF<player>: {}", csrfToken.getToken());
         Player_Fetch_ResponseDTO response = playerService.loginPlayer(data, httpServletResponse);
         return ResponseEntity.ok(response);
     }
@@ -66,7 +68,7 @@ public class Auth_Controller {
     ) {
         CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         if (csrfToken != null)
-            System.out.println("CSRF: " + csrfToken.getToken());
+            log.info("CSRF<team>: {}", csrfToken.getToken());
         Team_Fetch_ResponseDTO response = teamService.loginTeam(data, httpServletResponse);
         return ResponseEntity.ok(response);
     }

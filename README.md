@@ -13,7 +13,7 @@
     ./mvnw spring-boot:run -Dspring-boot.run.profiles=use_h2
 
 #### clean build jar
-    ./mvnw clean target
+    ./mvnw clean package
 
 #### run via jar (using hardcoded postgres running locally)
     java -jar APP.jar --spring.datasource.url=jdbc:postgresql://localhost:5432/anyteam_v1_db
