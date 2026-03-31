@@ -9,7 +9,6 @@ import nkemrocks.anyteam_v1.dto.sysConfig.response.SysConfig_ResponseDTO;
 import nkemrocks.anyteam_v1.service.SysConfig_Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -29,9 +28,6 @@ public class SysConfig_Controller {
     public ResponseEntity<SysConfig_ResponseDTO> info(
             HttpServletRequest httpServletRequest
     ) {
-        CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
-        if (csrfToken != null)
-            log.info("CSRF<admin>: {} <sysconfig>", csrfToken.getToken());
         SysConfig_ResponseDTO response = sysConfigService.getInfo();
         return ResponseEntity.ok(response);
     }

@@ -3,17 +3,17 @@
 - CONCEPTS.md shows how I organized layers of the app
 
 ### Build and Run App
-#### clean build + docker run:
+#### clean build + docker run + skip tests:
     ./mvnw clean package -DskipTests && docker compose up --build
 
 #### clean test (preserve color formating):
     ./mvnw clean test -Dstyle.color=always
 
 #### run without building jar (apply application-use_h2.properties)
-    ./mvnw spring-boot:run -Dspring-boot.run.profiles=use_h2
+    ./mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=use_h2
 
 #### clean build jar
-    ./mvnw clean package
+    mvn clean package
 
 #### run via jar (using hardcoded postgres running locally)
     java -jar APP.jar --spring.datasource.url=jdbc:postgresql://localhost:5432/anyteam_v1_db
